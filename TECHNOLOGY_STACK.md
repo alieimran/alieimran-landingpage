@@ -48,7 +48,7 @@ Baseline defined by the SRS (§64–67), checked against what's actually install
 | Pest Plugin Laravel | — | 4.1 (`pestphp/pest-plugin-laravel` ^4.1) |
 | PHPUnit | 12.5.33 | ^12.5.12 (via Pest) |
 
-57 tests passing as of 2026-09-22 (`php artisan test`).
+65 tests passing as of 2026-09-22 (`php artisan test`).
 
 ## Tooling
 

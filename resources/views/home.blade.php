@@ -140,7 +140,7 @@
                         <div class="grid gap-3 sm:grid-cols-2">
                             @foreach ($featuredLinks as $link)
                                 <a
-                                    href="{{ $link->url }}"
+                                    href="{{ route('go.link', $link) }}"
                                     @if ($link->open_in_new_tab) target="_blank" rel="noopener noreferrer" @endif
                                     class="group block rounded-xl border border-gray-200 dark:border-gray-800 bg-white dark:bg-gray-900 p-4 hover:border-emerald-500/40 hover:shadow-[0_0_16px_rgba(16,185,129,0.12)] transition"
                                 >
@@ -165,7 +165,7 @@
                         <div class="space-y-2">
                             @foreach ($links as $link)
                                 <a
-                                    href="{{ $link->url }}"
+                                    href="{{ route('go.link', $link) }}"
                                     @if ($link->open_in_new_tab) target="_blank" rel="noopener noreferrer" @endif
                                     class="group flex items-center justify-between rounded-lg border border-gray-200 dark:border-gray-800 bg-white dark:bg-gray-900 px-4 py-3 hover:border-emerald-500/40 transition"
                                 >
@@ -190,7 +190,7 @@
                         <div class="flex flex-wrap justify-center gap-2.5">
                             @foreach ($socialLinks as $social)
                                 <a
-                                    href="{{ $social->url }}"
+                                    href="{{ route('go.social', $social) }}"
                                     target="_blank" rel="noopener noreferrer"
                                     class="inline-flex items-center px-4 py-2 rounded-lg border border-gray-200 dark:border-gray-800 bg-white dark:bg-gray-900 text-sm font-medium hover:border-emerald-500/40 hover:text-emerald-600 dark:hover:text-emerald-400 transition"
                                 >

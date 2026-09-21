@@ -2,6 +2,19 @@
 
 Reverse-chronological. Each entry is what changed and why — not a restatement of the diff (that's what `git log` is for).
 
+## 2026-09-22 — First-party analytics dashboard (§36–39)
+
+- Requested mid-session: admin-visible graphs, visitor insights, "which country," "is there any interaction."
+- Country-of-visitor detection was flagged back to the user before building anything, since every option has a real tradeoff (a third-party geolocation API means sending every visitor's IP off-server; a self-hosted GeoIP database needs a MaxMind account and periodic manual updates). Decision: skip it for now, privacy-first default, matches SRS §38's own data-minimization principle. Revisit only if it turns out to matter.
+- `page_views` table (path, referrer, device type, browser, OS, and a **daily-rotating one-way hash** of IP+user-agent — never the raw IP, and the hash changes every day specifically so no visitor can be tracked across days) populated by a `TrackPageView` middleware applied only to the public `/` and `/contact` GET routes. Bot/crawler traffic is filtered out via a user-agent pattern check before it ever gets recorded.
+- `analytics_events` table for outbound interactions: public link/social hrefs on the homepage now point at `/go/link/{link}` and `/go/social/{socialLink}` instead of the destination directly — those routes log the click then 302-redirect. Since the redirect target always comes from our own `Link`/`SocialLink` database row (never from user input), this can't become an open redirect.
+- Wrote a small dependency-free `UserAgentParser` (browser/OS/device-type/bot detection via `str_contains`/regex) rather than pulling in a package — a personal analytics dashboard doesn't need pixel-perfect UA parsing.
+- Admin dashboard at `/admin/analytics`: summary tiles, a 14-day views bar chart, top pages, top referrers, browser/device breakdown, and an interactions panel — all rendered as plain CSS bar charts (width-percentage divs) to avoid pulling in a JS charting library, consistent with the "keep the frontend lightweight" principle. Zero new JS dependencies.
+- Added `analytics:prune` (default 90-day retention, scheduled monthly) — SRS §38 explicitly calls for bounded retention, not just anonymization.
+- Verified with real simulated traffic (varied user agents, referrers, device types) through actual HTTP requests and browser screenshots, then cleared that simulated data afterward so the live dashboard starts clean.
+- 8 new tests (page-view recording, bot exclusion, no-raw-IP assertion, link/social click redirect+logging, admin-only access, prune command) — suite at 65 passing.
+- Debugging note: `php artisan test --filter=X` appeared to hang through the harness's command-completion detection on this machine (same root cause noted in the SEO entry below) — resolved the same way, by wrapping the command in `timeout N ...`.
+
 ## 2026-09-22 — SEO completeness (§40–43)
 
 - Custom favicon: an SVG (crisp at any size, matches the terminal-prompt logo mark) plus generated PNG (180×180, for `apple-touch-icon`) and a real ICO — built with PHP's GD extension since no image-editing tool was available, including hand-constructing a minimal valid ICO container (6-byte header + 16-byte directory entry wrapping a PNG, the modern Vista+ ICO format) rather than relying on any external conversion service.
