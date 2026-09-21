@@ -41,6 +41,12 @@
                         <x-nav-link :href="route('admin.site-settings.edit')" :active="request()->routeIs('admin.site-settings.*')">
                             {{ __('Site Settings') }}
                         </x-nav-link>
+                        <x-nav-link :href="route('admin.contact-inquiries.index')" :active="request()->routeIs('admin.contact-inquiries.*')">
+                            {{ __('Contact') }}
+                            @if ($newInquiryCount > 0)
+                                <span class="ml-1.5 inline-flex items-center justify-center h-4 min-w-4 px-1 rounded-full bg-emerald-500 text-white text-[10px] font-semibold">{{ $newInquiryCount }}</span>
+                            @endif
+                        </x-nav-link>
                     @endif
                 </div>
             </div>
@@ -123,6 +129,9 @@
                 </x-responsive-nav-link>
                 <x-responsive-nav-link :href="route('admin.site-settings.edit')" :active="request()->routeIs('admin.site-settings.*')">
                     {{ __('Site Settings') }}
+                </x-responsive-nav-link>
+                <x-responsive-nav-link :href="route('admin.contact-inquiries.index')" :active="request()->routeIs('admin.contact-inquiries.*')">
+                    {{ __('Contact') }}{{ $newInquiryCount > 0 ? " ({$newInquiryCount})" : '' }}
                 </x-responsive-nav-link>
             @endif
 

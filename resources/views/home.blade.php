@@ -178,15 +178,22 @@
                     </section>
                 @endif
 
-                @if ($sections->has('contact') && $profile->contact_notification_email)
+                @if ($sections->has('contact'))
                     <section class="mt-16 text-center">
                         <div class="rounded-xl border border-dashed border-gray-300 dark:border-gray-800 px-6 py-8">
                             <h2 class="font-mono text-xs uppercase tracking-widest text-gray-600 dark:text-gray-400">
                                 <span class="text-emerald-500">$</span> get_in_touch
                             </h2>
-                            <a href="mailto:{{ $profile->contact_notification_email }}" class="mt-3 inline-block text-sm font-medium text-emerald-600 dark:text-emerald-400 hover:underline">
-                                {{ $profile->contact_notification_email }}
+                            <a href="{{ route('contact.create') }}" class="mt-4 inline-flex items-center px-5 py-2.5 rounded-lg bg-emerald-600 text-white text-sm font-semibold hover:bg-emerald-500 hover:shadow-[0_0_20px_rgba(16,185,129,0.35)] transition">
+                                Send a Message
                             </a>
+                            @if ($profile->contact_notification_email)
+                                <p class="mt-3">
+                                    <a href="mailto:{{ $profile->contact_notification_email }}" class="text-xs text-gray-500 dark:text-gray-500 hover:text-emerald-600 dark:hover:text-emerald-400 hover:underline">
+                                        {{ $profile->contact_notification_email }}
+                                    </a>
+                                </p>
+                            @endif
                         </div>
                     </section>
                 @endif

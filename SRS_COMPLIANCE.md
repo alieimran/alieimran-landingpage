@@ -22,12 +22,12 @@ Legend: ✅ Done · 🟡 Partial · ⬜ Not started · — Not applicable / proc
 | 4 | Featured links | ✅ | `links.featured` boolean (see §17 note below) |
 | 4 | Portfolio link | ✅ | seeded, `https://www.alieimran.com/portfolio` per §12's own default |
 | 4 | Digital business card | ⬜ | `digital_cards` table exists; no route/controller/view |
-| 4 | General contact/inquiry | 🟡 | `contact_inquiries` table + model exist; no public form, no admin inbox UI yet — homepage only shows a `mailto:` CTA |
+| 4 | General contact/inquiry | ✅ | public form at `/contact`, admin inbox at `/admin/contact-inquiries` |
 | 4 | Root-level analytics | ⬜ | not started |
 | 4 | Root-level SEO | 🟡 | basic `<title>`/description/OG tags on homepage; `seo_metadata` table unused; no sitemap/robots.txt |
 | 4 | Root-level theme | 🟡 | theme is implemented (see DESIGN_SYSTEM.md) but hard-coded in CSS, not admin-editable; `theme_settings` table exists but unused |
 | 4 | Section visibility | ✅ | `SiteSection` model drives homepage block visibility |
-| 4 | Administrative CMS | 🟡 | Links/Social Links/Categories/Site Settings CRUD done; Sections/Theme/Digital Card/Contact-inbox/SEO admin screens not built |
+| 4 | Administrative CMS | 🟡 | Links/Social Links/Categories/Site Settings/Contact-inbox CRUD done; Sections/Theme/Digital Card/SEO admin screens not built |
 | 4 | Security and hardening | 🟡 | see §51–61 below |
 | 4 | Error handling | ⬜ | custom 404/403/419/429/500/503 pages not built; still `APP_DEBUG=true` (local only) |
 | 5, 63 | No duplicate professional-content CMS (projects/photography/blog/Wataniah/CV) | ✅ | none built; links table used for teasers instead, as intended |
@@ -60,10 +60,10 @@ Legend: ✅ Done · 🟡 Partial · ⬜ Not started · — Not applicable / proc
 
 | § | Requirement | Status | Notes |
 |---|---|---|---|
-| 32 | Public contact form with category field | ⬜ | not built — homepage has a `mailto:` CTA as a placeholder only |
-| 33 | Inquiry storage + admin read/reply/archive/delete | 🟡 | `ContactInquiry` model + `markAsRead()` exist; no admin inbox UI, no public form to populate it |
-| 34 | Email notification on new inquiry | ⬜ | not built (no form yet) |
-| 35 | CSRF/validation/rate-limit/honeypot on contact form | ⬜ | not applicable yet — form doesn't exist |
+| 32 | Public contact form with category field | ✅ | `/contact` — name, email, phone (optional), subject, message, category select (7 SRS-specified categories) |
+| 33 | Inquiry storage + admin read/reply/archive/delete | ✅ | `/admin/contact-inquiries` — list with status filter, detail view (auto-marks read), status update (new/read/replied/archived), delete |
+| 34 | Email notification on new inquiry | ✅ | `NewContactInquiryMail` sent to `SiteSetting::contact_notification_email` if set; wrapped in try/catch so a mail failure never blocks the inquiry being saved (tested) |
+| 35 | CSRF/validation/rate-limit/honeypot on contact form | ✅ | CSRF via Blade `@csrf`; server-side validation (`StoreContactInquiryRequest`); `throttle:5,1` on the POST route; honeypot field (`website`, visually hidden, checked separately from validation so a bot gets a normal-looking "success" redirect instead of an error that would reveal the trap) |
 
 ## 36–43. Analytics & SEO
 
@@ -79,7 +79,7 @@ Legend: ✅ Done · 🟡 Partial · ⬜ Not started · — Not applicable / proc
 | § | Requirement | Status | Notes |
 |---|---|---|---|
 | 44 | `/admin`, single Super Admin, no public registration, `admin:create` command | ✅ | registration route/controller/view deleted; `php artisan admin:create` implemented with validation |
-| 45 | Admin manages profile/sections/links/categories/social/featured/digital-card/contact/theme/SEO/analytics | 🟡 | Profile, Links, Social Links, Categories done; the rest not built |
+| 45 | Admin manages profile/sections/links/categories/social/featured/digital-card/contact/theme/SEO/analytics | 🟡 | Profile, Links, Social Links, Categories, Contact inbox done; Sections/Theme/Digital Card/SEO/Analytics not built |
 | 46 | Section management (enable, nav/homepage visibility, sort order) | 🟡 | model + homepage consumption done; no admin CRUD screen for sections yet |
 | 47 | Theme management (colors, fonts, logo, favicon, dark mode) | ⬜ | not admin-editable; theme is currently a fixed design system in code |
 | 48 | Admin auth security (hashing, throttling, CSRF, session regen, secure logout, cookies) | ✅ | Laravel/Breeze defaults; login route throttled; bcrypt hashing |
@@ -98,7 +98,7 @@ Legend: ✅ Done · 🟡 Partial · ⬜ Not started · — Not applicable / proc
 | 56 | Output escaping | ✅ | Blade's default `{{ }}` escaping used throughout; no raw HTML output of user content |
 | 57 | Mass assignment protection | ✅ | explicit `$fillable` everywhere; `users.is_admin` deliberately excluded from `User`'s fillable list, only settable via `forceFill` in the `admin:create` command |
 | 58 | IDOR protection | ✅ | every admin route requires `auth`+`verified`+`admin` middleware; Form Requests also check `is_admin` in `authorize()` as defense-in-depth |
-| 59 | Rate limiting | 🟡 | Breeze's default login throttle only; no rate limiting configured for admin write actions or the (not-yet-built) contact form |
+| 59 | Rate limiting | 🟡 | Breeze's default login throttle; contact form throttled at `5,1`; no rate limiting on admin write actions |
 | 60 | Session security (secure cookies, HttpOnly, SameSite, regen, lifetime) | 🟡 | Laravel defaults apply; not yet hardened for production HTTPS (`SESSION_ENCRYPT`, secure-cookie flags need setting at deploy time) |
 | 61 | Database (MariaDB, utf8mb4, credentials in `.env`, FKs/indexes) | ✅ | `alieimran_landingpage` DB, utf8mb4/utf8mb4_unicode_ci, FK on `links.link_category_id`, indexes on `links`/`contact_inquiries` |
 
@@ -143,7 +143,7 @@ See **TECHNOLOGY_STACK.md** for the full version matrix.
 | 11 | Portfolio link works | ✅ |
 | 12 | External app links work | ✅ (link mechanism is generic) |
 | 13–14 | Digital card + QR | ⬜ |
-| 15–16 | Contact inquiries stored + email notification | ⬜ |
+| 15–16 | Contact inquiries stored + email notification | ✅ |
 | 17 | Root SEO works | 🟡 |
 | 18 | Sitemap works | ⬜ |
 | 19 | Analytics works where enabled | ⬜ |
@@ -167,6 +167,6 @@ These govern *how* the project is built rather than a feature to check off — f
 
 ## Summary
 
-**Solid:** architecture boundaries, core CMS (Links/Social/Categories/Settings), admin auth, file upload security, mass-assignment/IDOR protection, testing coverage for what's built, responsive design, the shared design system.
+**Solid:** architecture boundaries, core CMS (Links/Social/Categories/Settings), admin auth, the full Contact system (form/validation/rate-limiting/honeypot/email/admin inbox), file upload security, mass-assignment/IDOR protection, testing coverage for what's built, responsive design, the shared design system.
 
-**Biggest gaps to close next:** public Contact form + admin inbox, Digital Business Card + QR, SEO completeness (sitemap/robots/canonical/Twitter card), security headers, production error handling, and the deployment/backup docs. See PROJECT_STATUS.md for the prioritized next-steps list.
+**Biggest gaps to close next:** Digital Business Card + QR, SEO completeness (sitemap/robots/canonical/Twitter card), security headers, production error handling, and the deployment/backup docs. See PROJECT_STATUS.md for the prioritized next-steps list.

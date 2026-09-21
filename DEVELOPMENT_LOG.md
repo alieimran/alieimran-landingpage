@@ -2,6 +2,17 @@
 
 Reverse-chronological. Each entry is what changed and why — not a restatement of the diff (that's what `git log` is for).
 
+## 2026-09-22 — Public Contact form + admin inbox
+
+- Built the full Contact system (SRS §32–35), the top item on the prioritized next-steps list: public form at `/contact`, `ContactController`, `StoreContactInquiryRequest`.
+- Security measures required by the SRS, all implemented and tested: CSRF (Blade default), server-side validation, `throttle:5,1` rate limiting on the POST route, and a honeypot field (`website`) — checked separately from Laravel's validation pipeline so a bot that fills it gets an ordinary-looking success redirect instead of a validation error that would reveal the trap.
+- Email notification (`NewContactInquiryMail`) sent to whatever `SiteSetting::contact_notification_email` is set to, wrapped in a try/catch so a mail failure (e.g. SMTP misconfigured) never prevents the inquiry from being saved — verified with a test that forces `Mail::to()->send()` to throw and confirms the row still lands in the database.
+- Admin inbox at `/admin/contact-inquiries`: filterable list (by status), detail view that auto-marks an inquiry as read on open, a status-update form (new/read/replied/archived), and delete. Added a matching unread-count badge next to "Contact" in the admin nav and linked the dashboard's "New Inquiries" stat card straight to the filtered inbox.
+- Loosened the Site Settings CTA URL validation twice in support of this: first to accept `mailto:` links, then to also accept root-relative paths (`/contact`), so the homepage's "Get In Touch" CTA could point at the real form instead of opening the visitor's email client directly. Updated the seeded `secondary_cta_url` accordingly.
+- Updated the homepage's contact section to lead with a "Send a Message" button to `/contact`, keeping the direct email as a smaller secondary link underneath rather than the only option.
+- 14 new tests (form validation, honeypot, rate limiting, mail-failure resilience, admin CRUD, authorization boundaries) — suite now at 54 passing.
+- Verified the whole flow for real: submitted an inquiry as a guest via a real browser session, confirmed the unread badge appeared for the admin, opened it and confirmed it flipped to "read" automatically, screenshotted the result — then cleared the test data afterward.
+
 ## 2026-09-22 — Documentation set + seed data + admin polish
 
 - Created this file plus `SRS_COMPLIANCE.md`, `PROJECT_STATUS.md`, `DESIGN_SYSTEM.md`, `TECHNOLOGY_STACK.md` as a standing, git-tracked documentation set (to be updated going forward, not deleted).
