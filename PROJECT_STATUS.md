@@ -1,0 +1,62 @@
+# Project Status
+
+**Snapshot date:** 2026-09-22
+**Environment:** local development (Laravel Herd, Windows 11)
+**Live local URL:** `http://alieimran-landingpage.test`
+
+For the detailed requirement-by-requirement breakdown, see **SRS_COMPLIANCE.md**. For what was built in what order, see **DEVELOPMENT_LOG.md**. For version numbers, see **TECHNOLOGY_STACK.md**. For the visual theme, see **DESIGN_SYSTEM.md**.
+
+## What's live right now
+
+- **Public homepage** (`/`) — profile/hero, featured links, link hub, social links, contact CTA. Cybersecurity/IT dark theme, mobile-first, verified at 390px and 1440px.
+- **Admin panel** (`/admin`, single Super Admin only):
+  - Dashboard with quick counts
+  - Full CRUD: Links, Social Links, Link Categories, Site Settings (singleton profile editor)
+  - "View Site" shortcut in the nav to preview the public page in a new tab
+- **Auth:** Breeze-based login/logout/password-reset. Public registration is fully removed (route, controller, view, and its test all deleted).
+- **Database:** MariaDB (`alieimran_landingpage`), 12 migrations applied, seeded with default link categories, default site sections, and real-ish profile content (see "Seed data" below).
+- **Tests:** 40 Pest tests passing (`php artisan test`), Pint clean.
+
+## Admin access
+
+- URL: `/admin` (redirects through `/login` if not authenticated)
+- Account: `alieimran@outlook.com` — password was set interactively, not stored anywhere in this repo or its docs. If it's lost, run `php artisan admin:create` again — it refuses to run while a Super Admin already exists, so an existing account would need to be cleared first (not something to script casually — ask before doing that).
+
+## Seed data — what's real vs fabricated
+
+Per an explicit instruction to seed with some fabrication where real data isn't available:
+
+**Sourced directly from the SRS document or the conversation (real):**
+- Name, job title ("System Support Analyst"), tagline ("Windows Infrastructure | Technology | Cloud | Software") — the SRS's own example profile content (§10)
+- Portfolio link URL (`https://www.alieimran.com/portfolio`) — the SRS's own stated default (§12)
+- Admin contact email (`alieimran@outlook.com`) — matches the account used to log into the admin panel
+
+**Inferred from strong contextual clues (reasonable, not verified):**
+- Location: "Malaysia" — inferred from "Tunang"/"Kahwin" (Malay wedding-event terminology) and "Askar Wataniah" (Malaysia's territorial army reserve) appearing throughout the SRS
+
+**Fabricated placeholders (need to be replaced with the real thing):**
+- Biography paragraph — plausible professional summary, not written by the user
+- LinkedIn URL: `https://linkedin.com/in/alieimran`
+- GitHub URL: `https://github.com/alieimran`
+
+**Action needed:** verify/correct the fabricated items above via `/admin/site-settings` (biography) and `/admin/social-links` (LinkedIn/GitHub) — or hand over the real values and they'll get updated directly.
+
+## Known issues / environment quirks
+
+- **Vite version:** SRS baseline says Vite 8.x; Breeze 2.4.2's scaffolding still pins `^7.0.7`. Not blocking, just a version note (see TECHNOLOGY_STACK.md).
+- **Hosts resolution:** `alieimran-landingpage.test` needed a manual entry in `C:\Windows\System32\drivers\etc\hosts` — Herd's own site-detection didn't pick up the new folder under `D:\Herd` automatically the way it does for the sibling `alieimran-portfolio.test` and `jemputjemput.test` sites. Already fixed; noting it in case a future new site/subdomain hits the same thing.
+- **Theme not yet admin-editable:** the `theme_settings` table exists but nothing reads or writes it. The current dark cybersecurity theme is implemented directly in `resources/css/app.css` and Blade components, not driven by the database. If per-admin theme customization (SRS §47) becomes a priority, that's a distinct piece of work — wiring the DB values into the CSS custom properties at render time.
+
+## Prioritized next steps
+
+Roughly in the order they'd unblock the most SRS Definition-of-Done items (§84):
+
+1. **Public Contact form** (§32–35) — the form itself, validation, rate limiting, honeypot, and the admin inbox UI to read/reply/archive inquiries. The `ContactInquiry` model and table already exist.
+2. **SEO completeness** (§40–43) — canonical URL, Twitter card meta, favicon, `/sitemap.xml`, `/robots.txt`. Low effort, meaningful SRS coverage gain.
+3. **Security headers + production error handling** (§53–54) — CSP/X-Content-Type-Options/etc. middleware, custom 404/403/419/429/500/503 pages, and a production `.env` profile (`APP_DEBUG=false`, hardened session/cookie settings).
+4. **Digital Business Card + QR** (§30–31) — `/card` route, and only then install Endroid QR Code.
+5. **Section management admin UI** (§46) — CRUD screen for `SiteSection` (currently DB-only).
+6. **Theme management admin UI** (§47) — wire `theme_settings` into the actual rendered CSS.
+7. **Deployment docs** (§72–83) — INSTALLATION.md, DEPLOYMENT.md, CPANEL_DEPLOYMENT.md, SECURITY.md, BACKUP.md, TROUBLESHOOTING.md, plus the actual cPanel deployment when ready.
+
+None of this is started yet beyond what's listed as "live right now" above — this is a plan, not a claim of partial progress on these specific items.
