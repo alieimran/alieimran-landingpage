@@ -70,9 +70,9 @@ Legend: ✅ Done · 🟡 Partial · ⬜ Not started · — Not applicable / proc
 | § | Requirement | Status |
 |---|---|---|
 | 36–39 | Root analytics (page views, link clicks, optional GA) | ⬜ GA tag wiring exists (`ga_tracking_id` field renders the gtag snippet if set) but no first-party `page_views`/`analytics_events` tracking |
-| 40–41 | Root SEO (title, description, canonical, OG, Twitter card, robots, favicon) | 🟡 title/description/OG partially done; no canonical tag, no Twitter card meta, no favicon, no per-page `seo_metadata` admin UI |
-| 42 | `/sitemap.xml` | ⬜ not built |
-| 43 | `/robots.txt` | ⬜ not built |
+| 40–41 | Root SEO (title, description, canonical, OG, Twitter card, robots, favicon) | ✅ title/description/canonical/OG/Twitter-card all render, with `SeoMetadata::forPage('home')` overriding sensible defaults computed from `SiteSetting` when no override is set; SVG + PNG + ICO favicon (custom terminal-prompt mark); no admin UI yet to edit `seo_metadata` rows (only settable directly in the DB for now) |
+| 42 | `/sitemap.xml` | ✅ dynamic route, lists only indexable public pages (currently just `/`; `/contact` is excluded because it's noindex, admin/auth routes were never eligible) |
+| 43 | `/robots.txt` | ✅ static file, disallows `/admin`, `/login`, `/forgot-password`, `/reset-password`, `/dashboard`, `/profile`, `/contact`; references the sitemap |
 
 ## 44–50. Admin & CMS
 
@@ -144,8 +144,8 @@ See **TECHNOLOGY_STACK.md** for the full version matrix.
 | 12 | External app links work | ✅ (link mechanism is generic) |
 | 13–14 | Digital card + QR | ⬜ |
 | 15–16 | Contact inquiries stored + email notification | ✅ |
-| 17 | Root SEO works | 🟡 |
-| 18 | Sitemap works | ⬜ |
+| 17 | Root SEO works | ✅ |
+| 18 | Sitemap works | ✅ |
 | 19 | Analytics works where enabled | ⬜ |
 | 20 | Security controls implemented | 🟡 |
 | 21 | Error handling implemented | ⬜ |
@@ -167,6 +167,6 @@ These govern *how* the project is built rather than a feature to check off — f
 
 ## Summary
 
-**Solid:** architecture boundaries, core CMS (Links/Social/Categories/Settings), admin auth, the full Contact system (form/validation/rate-limiting/honeypot/email/admin inbox), file upload security, mass-assignment/IDOR protection, testing coverage for what's built, responsive design, the shared design system.
+**Solid:** architecture boundaries, core CMS (Links/Social/Categories/Settings), admin auth, the full Contact system (form/validation/rate-limiting/honeypot/email/admin inbox), file upload security, mass-assignment/IDOR protection, SEO (meta tags/sitemap/robots/favicon), manual dark/light theming across the whole system, testing coverage for what's built, responsive design, the shared design system.
 
-**Biggest gaps to close next:** Digital Business Card + QR, SEO completeness (sitemap/robots/canonical/Twitter card), security headers, production error handling, and the deployment/backup docs. See PROJECT_STATUS.md for the prioritized next-steps list.
+**Biggest gaps to close next:** Digital Business Card + QR, security headers, production error handling, and the deployment/backup docs. See PROJECT_STATUS.md for the prioritized next-steps list.

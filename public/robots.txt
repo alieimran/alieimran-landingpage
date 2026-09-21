@@ -1,2 +1,10 @@
 User-agent: *
-Disallow:
+Disallow: /admin
+Disallow: /login
+Disallow: /forgot-password
+Disallow: /reset-password
+Disallow: /dashboard
+Disallow: /profile
+Disallow: /contact
+
+Sitemap: https://www.alieimran.com/sitemap.xml

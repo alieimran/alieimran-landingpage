@@ -16,9 +16,10 @@ For the detailed requirement-by-requirement breakdown, see **SRS_COMPLIANCE.md**
   - Full CRUD: Links, Social Links, Link Categories, Site Settings (singleton profile editor)
   - Contact inbox: list with status filter, detail view (auto-marks read), status updates, delete — with an unread-count badge in the nav
   - "View Site" shortcut in the nav to preview the public page in a new tab
+- **SEO:** canonical URLs, Open Graph + Twitter Card meta (falls back to profile data when no `seo_metadata` override is set), dynamic `/sitemap.xml` (indexable pages only), static `/robots.txt` (disallows admin/auth routes), custom SVG/PNG/ICO favicon.
 - **Auth:** Breeze-based login/logout/password-reset. Public registration is fully removed (route, controller, view, and its test all deleted).
 - **Database:** MariaDB (`alieimran_landingpage`), 12 migrations applied, seeded with default link categories, default site sections, and real-ish profile content (see "Seed data" below).
-- **Tests:** 54 Pest tests passing (`php artisan test`), Pint clean.
+- **Tests:** 57 Pest tests passing (`php artisan test`), Pint clean.
 
 ## Admin access
 
@@ -55,11 +56,13 @@ Per an explicit instruction to seed with some fabrication where real data isn't 
 Roughly in the order they'd unblock the most SRS Definition-of-Done items (§84):
 
 1. ~~**Public Contact form**~~ — done (2026-09-22): form, validation, rate limiting, honeypot, email notification, admin inbox.
-2. **SEO completeness** (§40–43) — canonical URL, Twitter card meta, favicon, `/sitemap.xml`, `/robots.txt`. Low effort, meaningful SRS coverage gain.
-3. **Security headers + production error handling** (§53–54) — CSP/X-Content-Type-Options/etc. middleware, custom 404/403/419/429/500/503 pages, and a production `.env` profile (`APP_DEBUG=false`, hardened session/cookie settings).
-4. **Digital Business Card + QR** (§30–31) — `/card` route, and only then install Endroid QR Code.
-5. **Section management admin UI** (§46) — CRUD screen for `SiteSection` (currently DB-only).
-6. **Theme management admin UI** (§47) — wire `theme_settings` into the actual rendered CSS.
-7. **Deployment docs** (§72–83) — INSTALLATION.md, DEPLOYMENT.md, CPANEL_DEPLOYMENT.md, SECURITY.md, BACKUP.md, TROUBLESHOOTING.md, plus the actual cPanel deployment when ready.
+2. ~~**SEO completeness**~~ — done (2026-09-22): canonical URL, Twitter card meta, favicon, `/sitemap.xml`, `/robots.txt`.
+3. ~~**Manual dark/light toggle**~~ — done (2026-09-22), system-wide.
+4. **Analytics dashboard + visitor insights** (§36–39, requested 2026-09-22) — see the dedicated section below; in progress.
+5. **Security headers + production error handling** (§53–54) — CSP/X-Content-Type-Options/etc. middleware, custom 404/403/419/429/500/503 pages, and a production `.env` profile (`APP_DEBUG=false`, hardened session/cookie settings).
+6. **Digital Business Card + QR** (§30–31) — `/card` route, and only then install Endroid QR Code.
+7. **Section management admin UI** (§46) — CRUD screen for `SiteSection` (currently DB-only).
+8. **Theme management admin UI** (§47 remainder) — colors/fonts/logo still fixed in code; dark/light mode itself is done (see above).
+9. **Deployment docs** (§72–83) — INSTALLATION.md, DEPLOYMENT.md, CPANEL_DEPLOYMENT.md, SECURITY.md, BACKUP.md, TROUBLESHOOTING.md, plus the actual cPanel deployment when ready.
 
 None of this is started yet beyond what's listed as "live right now" above — this is a plan, not a claim of partial progress on these specific items.

@@ -2,6 +2,16 @@
 
 Reverse-chronological. Each entry is what changed and why — not a restatement of the diff (that's what `git log` is for).
 
+## 2026-09-22 — SEO completeness (§40–43)
+
+- Custom favicon: an SVG (crisp at any size, matches the terminal-prompt logo mark) plus generated PNG (180×180, for `apple-touch-icon`) and a real ICO — built with PHP's GD extension since no image-editing tool was available, including hand-constructing a minimal valid ICO container (6-byte header + 16-byte directory entry wrapping a PNG, the modern Vista+ ICO format) rather than relying on any external conversion service.
+- Canonical URL, Open Graph, and Twitter Card meta tags on the homepage, computed from `SiteSetting` with an optional override via `SeoMetadata::forPage('home')` — the first real use of that model, which existed since the foundation phase but was unused until now.
+- Fixed a real bug before it shipped: `og:image`/`twitter:image` were rendering as relative paths (`/storage/profile/...`) from `Storage::url()`, which social-media crawlers require to be absolute — wrapped in `url()`.
+- Dynamic `/sitemap.xml` (only lists indexable pages — currently just `/`; `/contact` is deliberately excluded since it's marked `noindex`) and a rewritten static `/robots.txt` (disallowing `/admin`, `/login`, `/forgot-password`, `/reset-password`, `/dashboard`, `/profile`, `/contact`, referencing the sitemap) — replacing Laravel's generic default stub.
+- Testing note: `/robots.txt` is a static file served directly by the webserver, not a Laravel route, so it can't be meaningfully requested through Pest's HTTP test client (which only dispatches through the router) — that test reads the file from disk instead of making an HTTP request.
+- Also hit a false alarm worth recording: `php artisan test --filter=...` appeared to hang indefinitely through the harness's command wrapper on this machine, but the same command wrapped in `timeout N ... ; echo EXIT` returned correctly in under a second — the tests were never actually stuck, something about how the harness detects completion for that specific invocation pattern was the problem, not Laravel/Pest/PHP. Prefixing with `timeout` resolved it for the rest of the session.
+- 3 new tests, suite at 57 passing.
+
 ## 2026-09-22 — Manual dark/light toggle, system-wide
 
 - Switched Tailwind's dark-mode strategy from media-query-only to class-based (`@custom-variant dark (&:where(.dark, .dark *));`), which is what makes an explicit override possible — every `dark:` utility already in use across the app picked this up automatically, no per-page class rewrites needed.

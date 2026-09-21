@@ -3,18 +3,38 @@
     <head>
         <meta charset="utf-8">
         @include('partials.theme-init')
+        @include('partials.favicon')
         <meta name="viewport" content="width=device-width, initial-scale=1">
         <meta name="theme-color" content="#05080a">
 
-        <title>{{ $profile->display_name }}{{ $profile->tagline ? ' — '.$profile->tagline : '' }}</title>
-        <meta name="description" content="{{ $profile->biography ?? $profile->tagline }}">
+        @php
+            $seoTitle = $seo->title ?? ($profile->display_name.($profile->tagline ? ' — '.$profile->tagline : ''));
+            $seoDescription = $seo->description ?? ($profile->biography ?? $profile->tagline);
+            $seoImage = $seo->og_image ?? ($profile->profile_photo ? url(\Illuminate\Support\Facades\Storage::url($profile->profile_photo)) : null);
+            $seoCanonical = $seo->canonical_url ?? url('/');
+            $seoRobots = $seo->robots ?? 'index,follow';
+        @endphp
+
+        <title>{{ $seoTitle }}</title>
+        <meta name="description" content="{{ $seoDescription }}">
+        <meta name="robots" content="{{ $seoRobots }}">
+        <link rel="canonical" href="{{ $seoCanonical }}">
 
         <!-- Open Graph -->
-        <meta property="og:title" content="{{ $profile->display_name }}">
-        <meta property="og:description" content="{{ $profile->biography ?? $profile->tagline }}">
+        <meta property="og:title" content="{{ $seoTitle }}">
+        <meta property="og:description" content="{{ $seoDescription }}">
         <meta property="og:type" content="profile">
-        @if ($profile->profile_photo)
-            <meta property="og:image" content="{{ \Illuminate\Support\Facades\Storage::url($profile->profile_photo) }}">
+        <meta property="og:url" content="{{ $seoCanonical }}">
+        @if ($seoImage)
+            <meta property="og:image" content="{{ $seoImage }}">
+        @endif
+
+        <!-- Twitter Card -->
+        <meta name="twitter:card" content="{{ $seoImage ? 'summary_large_image' : 'summary' }}">
+        <meta name="twitter:title" content="{{ $seoTitle }}">
+        <meta name="twitter:description" content="{{ $seoDescription }}">
+        @if ($seoImage)
+            <meta name="twitter:image" content="{{ $seoImage }}">
         @endif
 
         <!-- Fonts -->

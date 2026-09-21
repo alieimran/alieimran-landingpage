@@ -3,12 +3,14 @@
     <head>
         <meta charset="utf-8">
         @include('partials.theme-init')
+        @include('partials.favicon')
         <meta name="viewport" content="width=device-width, initial-scale=1">
         <meta name="theme-color" content="#05080a">
 
         <title>Contact — {{ $profile->display_name }}</title>
         <meta name="description" content="Get in touch with {{ $profile->display_name }}.">
         <meta name="robots" content="noindex">
+        <link rel="canonical" href="{{ url('/contact') }}">
 
         <link rel="preconnect" href="https://fonts.bunny.net">
         <link href="https://fonts.bunny.net/css?family=inter:400,500,600,700|jetbrains-mono:400,500,600&display=swap" rel="stylesheet" />

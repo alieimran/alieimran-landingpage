@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\Link;
+use App\Models\SeoMetadata;
 use App\Models\SiteSection;
 use App\Models\SiteSetting;
 use App\Models\SocialLink;
@@ -17,6 +18,7 @@ class HomeController extends Controller
         return view('home', [
             'sections' => $sections,
             'profile' => SiteSetting::current(),
+            'seo' => SeoMetadata::forPage('home'),
             'featuredLinks' => Link::visible()->featured()->ordered()->get(),
             'links' => Link::visible()->where('featured', false)->with('category')->ordered()->get(),
             'socialLinks' => SocialLink::visible()->get(),
