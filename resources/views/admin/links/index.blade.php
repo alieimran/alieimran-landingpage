@@ -4,7 +4,7 @@
             <h2 class="font-semibold text-xl text-gray-800 dark:text-gray-200 leading-tight">
                 {{ __('Links') }}
             </h2>
-            <a href="{{ route('admin.links.create') }}" class="inline-flex items-center px-4 py-2 bg-gray-800 dark:bg-gray-200 border border-transparent rounded-md font-semibold text-xs text-white dark:text-gray-800 uppercase tracking-widest hover:bg-gray-700 dark:hover:bg-white">
+            <a href="{{ route('admin.links.create') }}" class="inline-flex items-center px-4 py-2 bg-emerald-600 border border-transparent rounded-md font-semibold text-xs text-white uppercase tracking-widest hover:bg-emerald-500">
                 {{ __('New Link') }}
             </a>
         </div>
@@ -46,7 +46,7 @@
                                     @endif
                                 </td>
                                 <td class="px-6 py-4 text-right text-sm">
-                                    <a href="{{ route('admin.links.edit', $link) }}" class="text-indigo-600 dark:text-indigo-400 hover:underline">{{ __('Edit') }}</a>
+                                    <a href="{{ route('admin.links.edit', $link) }}" class="text-emerald-600 dark:text-emerald-400 hover:underline">{{ __('Edit') }}</a>
                                 </td>
                             </tr>
                         @empty

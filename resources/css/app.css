@@ -1,3 +1,30 @@
-@tailwind base;
-@tailwind components;
-@tailwind utilities;
+@import 'tailwindcss';
+@plugin '@tailwindcss/forms';
+
+@source '../../vendor/laravel/framework/src/Illuminate/Pagination/resources/views';
+
+@theme {
+    --font-sans: 'Inter', ui-sans-serif, system-ui, sans-serif;
+    --font-mono: 'JetBrains Mono', ui-monospace, SFMono-Regular, Menlo, monospace;
+
+    /* Cyber slate — replaces Tailwind's default gray scale so every
+       existing dark:bg-gray-*, border-gray-*, text-gray-* utility
+       picks up the theme automatically. */
+    --color-gray-50: #f4f7f9;
+    --color-gray-100: #e9eef2;
+    --color-gray-200: #d3dce3;
+    --color-gray-300: #b0bfc9;
+    --color-gray-400: #7d8b99;
+    --color-gray-500: #5a6a78;
+    --color-gray-600: #445260;
+    --color-gray-700: #2d3a47;
+    --color-gray-800: #16202b;
+    --color-gray-900: #0b1116;
+    --color-gray-950: #05080a;
+}
+
+@layer base {
+    body {
+        font-family: var(--font-sans);
+    }
+}
