@@ -1,0 +1,25 @@
+<?php
+
+namespace App\Models;
+
+use Illuminate\Database\Eloquent\Model;
+
+class ContactInquiry extends Model
+{
+    protected $fillable = [
+        'name',
+        'email',
+        'phone',
+        'subject',
+        'message',
+        'category',
+        'status',
+    ];
+
+    public function markAsRead(): void
+    {
+        if ($this->status === 'new') {
+            $this->update(['status' => 'read']);
+        }
+    }
+}
