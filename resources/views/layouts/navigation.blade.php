@@ -15,6 +15,24 @@
                     <x-nav-link :href="route('dashboard')" :active="request()->routeIs('dashboard')">
                         {{ __('Dashboard') }}
                     </x-nav-link>
+
+                    @if (Auth::user()->is_admin)
+                        <x-nav-link :href="route('admin.dashboard')" :active="request()->routeIs('admin.dashboard')">
+                            {{ __('Admin') }}
+                        </x-nav-link>
+                        <x-nav-link :href="route('admin.links.index')" :active="request()->routeIs('admin.links.*')">
+                            {{ __('Links') }}
+                        </x-nav-link>
+                        <x-nav-link :href="route('admin.social-links.index')" :active="request()->routeIs('admin.social-links.*')">
+                            {{ __('Social Links') }}
+                        </x-nav-link>
+                        <x-nav-link :href="route('admin.link-categories.index')" :active="request()->routeIs('admin.link-categories.*')">
+                            {{ __('Categories') }}
+                        </x-nav-link>
+                        <x-nav-link :href="route('admin.site-settings.edit')" :active="request()->routeIs('admin.site-settings.*')">
+                            {{ __('Site Settings') }}
+                        </x-nav-link>
+                    @endif
                 </div>
             </div>
 
@@ -70,6 +88,24 @@
             <x-responsive-nav-link :href="route('dashboard')" :active="request()->routeIs('dashboard')">
                 {{ __('Dashboard') }}
             </x-responsive-nav-link>
+
+            @if (Auth::user()->is_admin)
+                <x-responsive-nav-link :href="route('admin.dashboard')" :active="request()->routeIs('admin.dashboard')">
+                    {{ __('Admin') }}
+                </x-responsive-nav-link>
+                <x-responsive-nav-link :href="route('admin.links.index')" :active="request()->routeIs('admin.links.*')">
+                    {{ __('Links') }}
+                </x-responsive-nav-link>
+                <x-responsive-nav-link :href="route('admin.social-links.index')" :active="request()->routeIs('admin.social-links.*')">
+                    {{ __('Social Links') }}
+                </x-responsive-nav-link>
+                <x-responsive-nav-link :href="route('admin.link-categories.index')" :active="request()->routeIs('admin.link-categories.*')">
+                    {{ __('Categories') }}
+                </x-responsive-nav-link>
+                <x-responsive-nav-link :href="route('admin.site-settings.edit')" :active="request()->routeIs('admin.site-settings.*')">
+                    {{ __('Site Settings') }}
+                </x-responsive-nav-link>
+            @endif
         </div>
 
         <!-- Responsive Settings Options -->
