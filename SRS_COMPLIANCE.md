@@ -81,7 +81,7 @@ Legend: ✅ Done · 🟡 Partial · ⬜ Not started · — Not applicable / proc
 | 44 | `/admin`, single Super Admin, no public registration, `admin:create` command | ✅ | registration route/controller/view deleted; `php artisan admin:create` implemented with validation |
 | 45 | Admin manages profile/sections/links/categories/social/featured/digital-card/contact/theme/SEO/analytics | 🟡 | Profile, Links, Social Links, Categories, Contact inbox done; Sections/Theme/Digital Card/SEO/Analytics not built |
 | 46 | Section management (enable, nav/homepage visibility, sort order) | 🟡 | model + homepage consumption done; no admin CRUD screen for sections yet |
-| 47 | Theme management (colors, fonts, logo, favicon, dark mode) | ⬜ | not admin-editable; theme is currently a fixed design system in code |
+| 47 | Theme management (colors, fonts, logo, favicon, dark mode) | 🟡 | dark mode is done — every page has a manual light/dark toggle (not just OS-preference detection), applied consistently across the public site and admin; colors/fonts/logo/favicon are still fixed in code, not admin-editable |
 | 48 | Admin auth security (hashing, throttling, CSRF, session regen, secure logout, cookies) | ✅ | Laravel/Breeze defaults; login route throttled; bcrypt hashing |
 | 49 | Single Super Admin, Spatie Permission not required for V1 | ✅ | `users.is_admin` boolean, deliberately no RBAC package |
 | 50 | Audit logging | ⬜ | Spatie Activitylog not installed; no admin action log |

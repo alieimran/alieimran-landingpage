@@ -9,6 +9,7 @@ For the detailed requirement-by-requirement breakdown, see **SRS_COMPLIANCE.md**
 ## What's live right now
 
 - **Public homepage** (`/`) — profile/hero, featured links, link hub, social links, contact CTA (links to the real contact form). Cybersecurity/IT dark theme, mobile-first, verified at 390px and 1440px.
+- **Manual dark/light toggle** — every page (public and admin) has a sun/moon button that overrides the OS preference and is remembered across visits (`localStorage`). No flash-of-wrong-theme on load.
 - **Public contact form** (`/contact`) — name/email/phone/category/subject/message, CSRF, server-side validation, `throttle:5,1` rate limiting, honeypot spam trap, email notification to the admin (mail-failure-safe — the inquiry is always saved even if the notification email fails to send).
 - **Admin panel** (`/admin`, single Super Admin only):
   - Dashboard with quick counts (Links, Social Links, New Inquiries — each links to its respective screen)
@@ -47,7 +48,7 @@ Per an explicit instruction to seed with some fabrication where real data isn't 
 
 - **Vite version:** SRS baseline says Vite 8.x; Breeze 2.4.2's scaffolding still pins `^7.0.7`. Not blocking, just a version note (see TECHNOLOGY_STACK.md).
 - **Hosts resolution:** `alieimran-landingpage.test` needed a manual entry in `C:\Windows\System32\drivers\etc\hosts` — Herd's own site-detection didn't pick up the new folder under `D:\Herd` automatically the way it does for the sibling `alieimran-portfolio.test` and `jemputjemput.test` sites. Already fixed; noting it in case a future new site/subdomain hits the same thing.
-- **Theme not yet admin-editable:** the `theme_settings` table exists but nothing reads or writes it. The current dark cybersecurity theme is implemented directly in `resources/css/app.css` and Blade components, not driven by the database. If per-admin theme customization (SRS §47) becomes a priority, that's a distinct piece of work — wiring the DB values into the CSS custom properties at render time.
+- **Theme colors/fonts/logo not yet admin-editable:** the `theme_settings` table exists but nothing reads or writes it. The current dark cybersecurity theme is implemented directly in `resources/css/app.css` and Blade components, not driven by the database. (Dark/light *mode itself* is user-toggleable now — see below — this note is specifically about admin-customizable brand colors/fonts, a separate SRS §47 sub-requirement.) If that becomes a priority, it's a distinct piece of work — wiring the DB values into the CSS custom properties at render time.
 
 ## Prioritized next steps
 

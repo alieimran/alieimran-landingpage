@@ -2,6 +2,15 @@
 
 Reverse-chronological. Each entry is what changed and why — not a restatement of the diff (that's what `git log` is for).
 
+## 2026-09-22 — Manual dark/light toggle, system-wide
+
+- Switched Tailwind's dark-mode strategy from media-query-only to class-based (`@custom-variant dark (&:where(.dark, .dark *));`), which is what makes an explicit override possible — every `dark:` utility already in use across the app picked this up automatically, no per-page class rewrites needed.
+- Built the toggle as two small pieces: `partials/theme-init.blade.php` (a blocking inline script, first thing in every page's `<head>`, so there's no flash of the wrong theme on load; reads `localStorage` with a `prefers-color-scheme` fallback; exposes `window.__setTheme()`) and `components/theme-toggle.blade.php` (the sun/moon button, just calls that global function — the icon swap itself is pure CSS via `dark:hidden`/`dark:block`, no JS state tracking needed).
+- Also keeps the `theme-color` meta tag (mobile browser chrome color) in sync when toggled, not just the `dark` class.
+- Added to all 4 root HTML documents: the public homepage and contact page (floating button, since neither has a persistent nav bar), the admin layout (desktop nav + mobile menu), and the login page. Deliberately skipped the plain-HTML contact-notification email template — email clients don't run JS.
+- Verified with real browser automation, not just reading markup: launched with `colorScheme: 'dark'`, confirmed default dark render, clicked the toggle, confirmed instant light re-render, reloaded the page and confirmed the choice persisted, then separately confirmed the same toggle carries through from the login page into the authenticated admin dashboard after navigating.
+- No test changes needed — this is a pure CSS/client-side mechanism, the existing 54 tests (which check content and authorization, not visual theme) continued to pass unmodified.
+
 ## 2026-09-22 — Public Contact form + admin inbox
 
 - Built the full Contact system (SRS §32–35), the top item on the prioritized next-steps list: public form at `/contact`, `ContactController`, `StoreContactInquiryRequest`.

@@ -2,6 +2,7 @@
 <html lang="{{ str_replace('_', '-', app()->getLocale()) }}" class="scroll-smooth">
     <head>
         <meta charset="utf-8">
+        @include('partials.theme-init')
         <meta name="viewport" content="width=device-width, initial-scale=1">
         <meta name="theme-color" content="#05080a">
 
@@ -33,6 +34,8 @@
         @endif
     </head>
     <body class="bg-white dark:bg-gray-950 text-gray-900 dark:text-gray-100 font-sans antialiased">
+        <x-theme-toggle class="fixed top-4 right-4 sm:top-6 sm:right-6 z-50 w-10 h-10 bg-white/80 dark:bg-gray-900/80 backdrop-blur" />
+
         <!-- Ambient grid backdrop -->
         <div class="pointer-events-none fixed inset-0 -z-10 hidden dark:block" aria-hidden="true">
             <div class="absolute inset-0 opacity-[0.07]" style="background-image: linear-gradient(to right, #34d399 1px, transparent 1px), linear-gradient(to bottom, #34d399 1px, transparent 1px); background-size: 44px 44px;"></div>

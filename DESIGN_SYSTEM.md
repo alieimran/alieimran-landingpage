@@ -6,7 +6,7 @@ Theme: **modern IT / cybersecurity**, dark-forward, mobile-first, shared identic
 
 1. **Mobile-first, desktop-polished.** Every layout is designed at 390px width first, then enhanced (wider max-width, larger type) at `sm:`/`lg:` breakpoints. Verified visually via Playwright screenshots at 390px and 1440px.
 2. **One theme, one codebase.** Colors and fonts are defined once as Tailwind v4 `@theme` tokens in `resources/css/app.css`. Shared Blade components (buttons, inputs, nav) consume them, so the public site and `/admin` stay visually consistent without per-page duplication.
-3. **Dark mode is the primary experience**, light mode is a fully-supported fallback (respects `prefers-color-scheme`, no manual toggle yet). Both are contrast-checked.
+3. **Dark mode is the primary experience**, light mode is a fully-supported alternative. Visitors get a manual toggle (sun/moon button) on every page — public and admin — that overrides the OS preference and is remembered across visits. Both modes are contrast-checked.
 4. **Terminal / HUD motifs, used sparingly.** Monospace labels, `#`/`$` prompt-style section eyebrows, a pulsing status dot, corner-bracket avatar framing. The intent is a technical feel that still reads as a professional recruiter-facing page — not a "hacker movie" pastiche.
 
 ## Color tokens
@@ -32,6 +32,17 @@ Defined in `resources/css/app.css` under `@theme`. These **override Tailwind's b
 ### Contrast rule (learned the hard way)
 
 Muted text pairs must read **darker shade in light mode, lighter shade in dark mode** — e.g. `text-gray-600 dark:text-gray-400`, never the reverse. An early pass on the homepage had this backwards (`text-gray-400 dark:text-gray-600`), which failed WCAG contrast in *both* modes simultaneously (~3:1 against white, ~3:1 against near-black). Fixed 2026-09-22; if you add new muted-text utility pairs, keep this ordering.
+
+## Dark/light toggle
+
+Every page — public and admin — has a manual sun/moon toggle button (`<x-theme-toggle>`), not just OS-preference detection. Mechanism:
+
+- **Class-based, not media-query-based.** `resources/css/app.css` declares `@custom-variant dark (&:where(.dark, .dark *));`, so every `dark:` utility in the app responds to a `dark` class on `<html>` rather than only `prefers-color-scheme`. This is what makes an explicit override possible.
+- **`resources/views/partials/theme-init.blade.php`** — a plain inline `<script>` included as the very first thing in every page's `<head>` (before any CSS/Vite asset), so it runs before first paint and there's no flash of the wrong theme. It reads `localStorage.theme`; if unset, it falls back to `prefers-color-scheme`. It also defines `window.__setTheme(isDark)`, the single place that knows how to apply a theme (toggles the class, updates the `theme-color` meta tag for mobile browser chrome, writes to `localStorage`).
+- **`resources/views/components/theme-toggle.blade.php`** — the button itself. Just calls `window.__setTheme(...)` on click; an Alpine `x-data` is present only so `@click` works, there's no reactive state to track since the sun/moon icon swap is done with plain `dark:` CSS classes on the two SVGs (whichever one matches the current `.dark` state on `<html>` is visible — no JS-driven icon logic needed).
+- **Included in all 4 root `<html>` documents:** `home.blade.php`, `contact.blade.php`, `layouts/app.blade.php` (all authenticated/admin pages), `layouts/guest.blade.php` (login/auth pages). The email template (`emails/contact-inquiry.blade.php`) is deliberately excluded — email clients don't run JS or read localStorage, so a toggle there is meaningless; that template just uses fixed light colors.
+- **Placement:** admin nav (desktop, next to "View Site"; mobile, next to the account name in the slide-down menu), login card header, and a fixed top-right floating button on the public homepage and contact page (since those don't have a persistent nav bar).
+- **Future CSP note:** the inline init script will need a nonce or hash added to `script-src` once security headers (SRS §53) are implemented — flagged in the file itself too.
 
 ## Typography
 

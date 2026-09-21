@@ -3,6 +3,13 @@
 
 @source '../../vendor/laravel/framework/src/Illuminate/Pagination/resources/views';
 
+/* Manual dark mode: toggled via a `dark` class on <html> (see
+   resources/views/partials/theme-init.blade.php and
+   components/theme-toggle.blade.php) rather than only following
+   prefers-color-scheme. Defaults to system preference on first visit,
+   then remembers the visitor's explicit choice. */
+@custom-variant dark (&:where(.dark, .dark *));
+
 @theme {
     --font-sans: 'Inter', ui-sans-serif, system-ui, sans-serif;
     --font-mono: 'JetBrains Mono', ui-monospace, SFMono-Regular, Menlo, monospace;

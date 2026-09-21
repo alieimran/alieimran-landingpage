@@ -2,6 +2,7 @@
 <html lang="{{ str_replace('_', '-', app()->getLocale()) }}" class="scroll-smooth">
     <head>
         <meta charset="utf-8">
+        @include('partials.theme-init')
         <meta name="viewport" content="width=device-width, initial-scale=1">
         <meta name="theme-color" content="#05080a">
 
@@ -22,9 +23,12 @@
 
         <div class="min-h-screen flex flex-col items-center px-5 sm:px-6 py-14 sm:py-20">
             <main class="w-full max-w-lg">
-                <a href="{{ route('home') }}" class="inline-flex items-center gap-1.5 font-mono text-xs uppercase tracking-widest text-gray-600 dark:text-gray-400 hover:text-emerald-600 dark:hover:text-emerald-400 transition">
-                    &larr; back
-                </a>
+                <div class="flex items-center justify-between">
+                    <a href="{{ route('home') }}" class="inline-flex items-center gap-1.5 font-mono text-xs uppercase tracking-widest text-gray-600 dark:text-gray-400 hover:text-emerald-600 dark:hover:text-emerald-400 transition">
+                        &larr; back
+                    </a>
+                    <x-theme-toggle class="w-9 h-9" />
+                </div>
 
                 <h1 class="mt-6 text-2xl sm:text-3xl font-bold tracking-tight">Get in touch</h1>
                 <p class="mt-2 text-sm text-gray-600 dark:text-gray-400">
