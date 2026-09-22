@@ -24,7 +24,7 @@ For the detailed requirement-by-requirement breakdown, see **SRS_COMPLIANCE.md**
 - **SEO:** canonical URLs, Open Graph + Twitter Card meta (falls back to profile data when no `seo_metadata` override is set), dynamic `/sitemap.xml` (indexable pages only), static `/robots.txt`, custom SVG/PNG/ICO favicon (overridable per the Theme admin page above).
 - **Security:** global security headers (`X-Content-Type-Options`, `X-Frame-Options`, `Referrer-Policy`, `Permissions-Policy`, HSTS when served over HTTPS) plus a per-request-nonce Content-Security-Policy. Themed custom error pages for 404/403/419/429/500/503, verified resilient to database failures (they don't depend on a DB query succeeding to render).
 - **Auth:** Breeze-based login/logout/password-reset. Public registration is fully removed.
-- **Database:** MariaDB (`alieimran_landingpage`), 15 migrations applied.
+- **Database:** MariaDB (`alieimran_landingpage`), 16 migrations applied.
 - **Tests:** 81 Pest tests passing (`php artisan test`), Pint clean.
 
 ## Admin access
@@ -69,6 +69,6 @@ Roughly in the order they'd unblock the most SRS Definition-of-Done items (§84)
 6. ~~**Digital Business Card + QR**~~ — done (2026-09-22).
 7. ~~**Section management admin UI**~~ — done (2026-09-22), edit-only by design.
 8. ~~**Theme management admin UI**~~ — done (2026-09-22), scoped to primary color + logo + favicon; see Known issues for what's deferred.
-9. **Deployment docs** (§72–83) — INSTALLATION.md, DEPLOYMENT.md, CPANEL_DEPLOYMENT.md, SECURITY.md, BACKUP.md, TROUBLESHOOTING.md, plus the actual cPanel deployment when ready. The only item left from the original four-item request.
+9. ~~**Deployment docs**~~ — done (2026-09-22): README.md, INSTALLATION.md, DEPLOYMENT.md, CPANEL_DEPLOYMENT.md, SECURITY.md, BACKUP.md, TROUBLESHOOTING.md.
 
-Everything above the deployment docs is genuinely done and tested, not just started — each item's own commit and DEVELOPMENT_LOG.md entry has the verification details (tests + visual/browser checks where relevant).
+Every item from the original four-part request (security headers/error handling, Digital Business Card + QR, Section/Theme admin UIs, deployment docs) is done. What's left is genuinely down to: **the actual production deployment** (docs are ready, host is untested — see `CPANEL_DEPLOYMENT.md`'s own checklist), and the smaller deferred items noted throughout (full theme color customization beyond the primary accent, the two documented CSP exceptions, country analytics). Nothing above is a partial or fake implementation — each has its own commit, tests, and (where visual) a real browser-screenshot verification recorded in `DEVELOPMENT_LOG.md`.

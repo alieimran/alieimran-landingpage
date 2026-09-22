@@ -125,12 +125,12 @@ See **TECHNOLOGY_STACK.md** for the full version matrix.
 
 | § | Requirement | Status |
 |---|---|---|
-| 72–76 | Production deployment (cPanel, source outside web root, hardened config) | ⬜ not started — local dev only so far |
-| 77–79 | Testing (functional + security scenarios) | 🟡 40 Pest tests covering auth, admin CRUD, authorization boundaries, link visibility windows, CTA validation; no dedicated CSRF/XSS/SQLi-injection-attempt tests beyond what Laravel's framework guarantees by default |
-| 80 | Documentation set | 🟡 this file + PROJECT_STATUS.md + DEVELOPMENT_LOG.md + DESIGN_SYSTEM.md + TECHNOLOGY_STACK.md exist; INSTALLATION.md, DEPLOYMENT.md, CPANEL_DEPLOYMENT.md, SECURITY.md, BACKUP.md, TROUBLESHOOTING.md not yet written |
-| 81 | Backup procedure | ⬜ not started |
+| 72–76 | Production deployment (cPanel, source outside web root, hardened config) | 🟡 documented in full (`DEPLOYMENT.md`, `CPANEL_DEPLOYMENT.md`) but not yet exercised against the real host — still local dev only in practice. `CPANEL_DEPLOYMENT.md` says this explicitly and has a checklist to fill in after the first real deploy |
+| 77–79 | Testing (functional + security scenarios) | 🟡 81 Pest tests covering auth, admin CRUD, authorization boundaries, link visibility windows, CTA validation, security headers/CSP presence, error pages, analytics privacy (no-raw-IP assertion), digital card, sections, theme; no dedicated CSRF/XSS/SQLi-injection-attempt tests beyond what Laravel's framework guarantees by default |
+| 80 | Documentation set | ✅ README.md, SRS_COMPLIANCE.md, PROJECT_STATUS.md, DEVELOPMENT_LOG.md, DESIGN_SYSTEM.md, TECHNOLOGY_STACK.md, INSTALLATION.md, DEPLOYMENT.md, CPANEL_DEPLOYMENT.md, SECURITY.md, BACKUP.md, TROUBLESHOOTING.md all present |
+| 81 | Backup procedure | 🟡 documented in full (`BACKUP.md`); not yet automated/scheduled — flagged there as a task for first production deployment |
 | 82 | Git security (no secrets committed) | ✅ `.env` gitignored and never committed; `.env.example` has placeholder values only |
-| 83 | Deployment checklist | ⬜ not started |
+| 83 | Deployment checklist | ✅ in `DEPLOYMENT.md`, adapted directly from this SRS section |
 
 ## 84. Definition of Done — running scorecard
 
@@ -151,8 +151,8 @@ See **TECHNOLOGY_STACK.md** for the full version matrix.
 | 21 | Error handling implemented | ✅ |
 | 22 | Automated tests pass | ✅ 40/40 |
 | 23 | Production config hardened | ⬜ |
-| 24 | Documentation complete | 🟡 in progress |
-| 25 | Deployment tested | ⬜ |
+| 24 | Documentation complete | ✅ |
+| 25 | Deployment tested | ⬜ documented but not yet exercised against the real host |
 | 26–28 | Portfolio/Tunang/Kahwin remain independent | ✅ (trivially — none exist in this workspace to affect) |
 | 29 | No duplicate professional-content CMS | ✅ |
 
@@ -167,6 +167,6 @@ These govern *how* the project is built rather than a feature to check off — f
 
 ## Summary
 
-**Solid:** architecture boundaries, core CMS (Links/Social/Categories/Settings/Sections/Theme-basics/Digital-Card), admin auth, the full Contact system (form/validation/rate-limiting/honeypot/email/admin inbox), file upload security, mass-assignment/IDOR protection, SEO (meta tags/sitemap/robots/favicon), manual dark/light theming across the whole system, privacy-conscious first-party analytics (page views + link-click tracking, no raw IPs stored, bounded retention), security headers + CSP + custom error pages, Digital Business Card + QR, testing coverage for what's built (81 tests), responsive design, the shared design system.
+**Solid:** architecture boundaries, core CMS (Links/Social/Categories/Settings/Sections/Theme-basics/Digital-Card), admin auth, the full Contact system (form/validation/rate-limiting/honeypot/email/admin inbox), file upload security, mass-assignment/IDOR protection, SEO (meta tags/sitemap/robots/favicon), manual dark/light theming across the whole system, privacy-conscious first-party analytics (page views + link-click tracking, no raw IPs stored, bounded retention), security headers + CSP + custom error pages, Digital Business Card + QR, the full documentation set (12 files), testing coverage for what's built (81 tests), responsive design, the shared design system.
 
-**Biggest gaps to close next:** deployment/backup docs (in progress), full theme color customization (deliberately scoped down to primary accent + logo + favicon this pass), Section/Theme create-new-entries (deliberately edit-only by design). See PROJECT_STATUS.md for the prioritized next-steps list.
+**Remaining gaps, all deliberate and documented rather than oversights:** the actual production deployment hasn't happened yet (docs are written and ready — `DEPLOYMENT.md`, `CPANEL_DEPLOYMENT.md` — but unexercised against the real host); full theme color customization is scoped down to primary accent + logo + favicon (extending it further is additive work, not a redesign, if it becomes a priority); Sections/Theme admin screens are edit-only by design (no create/delete, since both map to fixed code); two documented CSP exceptions (`unsafe-eval` for Alpine.js, `unsafe-inline` for a handful of inline styles) remain open follow-up items. See PROJECT_STATUS.md for the prioritized next-steps list — at this point, that list is essentially just "deploy it for real and see what breaks."

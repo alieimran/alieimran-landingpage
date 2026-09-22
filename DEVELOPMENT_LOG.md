@@ -2,6 +2,17 @@
 
 Reverse-chronological. Each entry is what changed and why — not a restatement of the diff (that's what `git log` is for).
 
+## 2026-09-22 — Full documentation set (§72–83)
+
+- Replaced the stock Laravel skeleton README with a project-specific one that introduces the app and indexes the rest of the documentation set.
+- `INSTALLATION.md` — local setup walkthrough, mirrors what actually happened during the foundation phase (MariaDB creation, `.env` config, `admin:create`, Herd hosts-file note).
+- `DEPLOYMENT.md` — general production process: the SRS's own build-locally/no-Node-on-server workflow (§76), required production `.env` differences, directory-structure/exposure notes (§74), rollback procedure, and a deployment checklist adapted directly from SRS §83.
+- `CPANEL_DEPLOYMENT.md` — the actual host's specifics (JimatHosting, SSH port 222, PHP 8.4.x, MariaDB 11.4.x, per SRS §72) — SSH access, directory layout respecting the sibling-app boundary (Portfolio/Tunang/Kahwin untouched), cPanel database setup, git-based deployment, cron for the `analytics:prune` scheduler, SSL. Explicitly marked as unexercised against the real host yet, with a checklist to fill in after the first real deploy rather than presenting untested assumptions as verified fact.
+- `SECURITY.md` — consolidates everything security-related already built across earlier sessions into one reference: auth/authorization, input validation, file upload rules, the CSP design and both of its documented exceptions (`unsafe-eval` for Alpine, `unsafe-inline` for a few computed styles), rate limiting, the contact form's anti-spam measures, the privacy-conscious analytics design, and the error-page DB-failure resilience bug that was caught and fixed earlier.
+- `BACKUP.md` — what needs backing up (database, `storage/app/public/`, `.env` — explicitly *not* just "the git repo," since git only covers source) and the restore procedure for each, plus a full disaster-recovery sequence.
+- `TROUBLESHOOTING.md` — built from problems actually hit this session, not speculative ones: the hosts-file resolution issue, the Windows NTFS write-permission blocker from the foundation phase, the `RefreshDatabase` omission bug pattern that recurred a few times, the singleton-model-missing-default bug class (after finding it twice — `DigitalCard` and `ThemeSetting`), and how to diagnose a CSP violation.
+- This closes out the last of the four items requested together (security headers, Digital Business Card, Section/Theme admin UIs, deployment docs) — all four are now done.
+
 ## 2026-09-22 — Security headers, Digital Business Card + QR, Section/Theme admin UIs
 
 Requested as one batch: all four remaining items from the prioritized next-steps list. Worked through them in risk order (security first, then the smaller features).
