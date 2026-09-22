@@ -2,6 +2,15 @@
 
 Reverse-chronological. Each entry is what changed and why — not a restatement of the diff (that's what `git log` is for).
 
+## 2026-09-22 — Remove the pointless `/dashboard` page, fix "Manage" nav alignment
+
+User-reported, from a screenshot: `/dashboard` (Breeze's stock post-login landing page) just showed "You're logged in!" with nothing to do there, and the "Manage" dropdown in the admin nav looked visibly misaligned against its siblings.
+
+- **`/dashboard`:** kept as a *named* route (Breeze's stock `AuthenticatedSessionController`, `EmailVerificationPromptController`, etc. all redirect to `route('dashboard')` internally after login/verification/password-confirmation — renaming it would mean patching every one of those), but changed what it actually does: redirects straight to `route('admin.dashboard')` instead of rendering a placeholder view. There's no non-admin experience anywhere in this single-Super-Admin system, so there was never anything else worth showing here. Removed the now-unused `dashboard.blade.php` and the redundant "Dashboard" nav-link (desktop + mobile) that pointed at the same place "Admin" already does.
+- **"Manage" dropdown alignment:** root cause was that `<x-dropdown>`'s own wrapper is a plain block-level `<div>`, not a flex item that centers itself the way `<x-nav-link>` does internally — so inside a flex row without `items-center` on the parent (relied on for the *other* nav-links' active-tab underline to sit flush against the bottom of the h-16 bar, which adding `items-center` to the parent would have broken), the dropdown trigger fell back to block-flow top alignment instead of being vertically centered. Fixed by wrapping just this one `<x-dropdown>` usage in a local `flex items-center` div, matching nav-link's self-centering without touching the shared component or the other nav items' positioning.
+- Verified both fixes with real browser screenshots, desktop and mobile: confirmed login lands directly on `/admin`, confirmed the "Manage" button now sits at the same baseline as "Admin"/"Analytics"/"Contact," and confirmed the dropdown opens correctly anchored (no more cut-off first item, the actual symptom that gave away the original bug).
+- 1 new test (`/dashboard` redirects to `route('admin.dashboard')` for an admin) — suite at 96 passing.
+
 ## 2026-09-22 — Bug-hunting pass: "recheck and fix all bugs"
 
 Requested as a general audit, not tied to a specific feature. Went through every custom controller and model systematically, and found several real, confirmed bugs — not just theoretical ones:

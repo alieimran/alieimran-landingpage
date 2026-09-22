@@ -21,10 +21,6 @@
 
                 <!-- Navigation Links -->
                 <div class="hidden space-x-8 sm:-my-px sm:ms-10 sm:flex">
-                    <x-nav-link :href="route('dashboard')" :active="request()->routeIs('dashboard')">
-                        {{ __('Dashboard') }}
-                    </x-nav-link>
-
                     @if (Auth::user()->is_admin)
                         @php
                             $manageRoutes = ['admin.links.*', 'admin.social-links.*', 'admin.link-categories.*', 'admin.site-settings.*', 'admin.digital-card.*', 'admin.sections.*', 'admin.theme.*'];
@@ -42,25 +38,31 @@
                             @endif
                         </x-nav-link>
 
-                        <x-dropdown align="left" width="48">
-                            <x-slot name="trigger">
-                                <button
-                                    class="inline-flex items-center gap-1 px-1 pt-1 border-b-2 text-sm font-medium leading-5 transition duration-150 ease-in-out focus:outline-none {{ request()->routeIs($manageRoutes) ? 'border-emerald-500 dark:border-emerald-400 text-gray-900 dark:text-gray-100' : 'border-transparent text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200 hover:border-gray-300 dark:hover:border-gray-700' }}"
-                                >
-                                    {{ __('Manage') }}
-                                    <svg class="w-3.5 h-3.5" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z" clip-rule="evenodd" /></svg>
-                                </button>
-                            </x-slot>
-                            <x-slot name="content">
-                                <x-dropdown-link :href="route('admin.links.index')">{{ __('Links') }}</x-dropdown-link>
-                                <x-dropdown-link :href="route('admin.social-links.index')">{{ __('Social Links') }}</x-dropdown-link>
-                                <x-dropdown-link :href="route('admin.link-categories.index')">{{ __('Categories') }}</x-dropdown-link>
-                                <x-dropdown-link :href="route('admin.site-settings.edit')">{{ __('Site Settings') }}</x-dropdown-link>
-                                <x-dropdown-link :href="route('admin.digital-card.edit')">{{ __('Digital Card') }}</x-dropdown-link>
-                                <x-dropdown-link :href="route('admin.sections.index')">{{ __('Sections') }}</x-dropdown-link>
-                                <x-dropdown-link :href="route('admin.theme.edit')">{{ __('Theme') }}</x-dropdown-link>
-                            </x-slot>
-                        </x-dropdown>
+                        {{-- <x-dropdown>'s own wrapper is a plain block div, not a flex
+                             item that centers itself the way <x-nav-link> does — without
+                             this wrapping div, the trigger button sits top-aligned instead
+                             of vertically centered in the h-16 nav bar like its siblings. --}}
+                        <div class="flex items-center">
+                            <x-dropdown align="left" width="48">
+                                <x-slot name="trigger">
+                                    <button
+                                        class="inline-flex items-center gap-1 px-1 pt-1 border-b-2 text-sm font-medium leading-5 transition duration-150 ease-in-out focus:outline-none {{ request()->routeIs($manageRoutes) ? 'border-emerald-500 dark:border-emerald-400 text-gray-900 dark:text-gray-100' : 'border-transparent text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200 hover:border-gray-300 dark:hover:border-gray-700' }}"
+                                    >
+                                        {{ __('Manage') }}
+                                        <svg class="w-3.5 h-3.5" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z" clip-rule="evenodd" /></svg>
+                                    </button>
+                                </x-slot>
+                                <x-slot name="content">
+                                    <x-dropdown-link :href="route('admin.links.index')">{{ __('Links') }}</x-dropdown-link>
+                                    <x-dropdown-link :href="route('admin.social-links.index')">{{ __('Social Links') }}</x-dropdown-link>
+                                    <x-dropdown-link :href="route('admin.link-categories.index')">{{ __('Categories') }}</x-dropdown-link>
+                                    <x-dropdown-link :href="route('admin.site-settings.edit')">{{ __('Site Settings') }}</x-dropdown-link>
+                                    <x-dropdown-link :href="route('admin.digital-card.edit')">{{ __('Digital Card') }}</x-dropdown-link>
+                                    <x-dropdown-link :href="route('admin.sections.index')">{{ __('Sections') }}</x-dropdown-link>
+                                    <x-dropdown-link :href="route('admin.theme.edit')">{{ __('Theme') }}</x-dropdown-link>
+                                </x-slot>
+                            </x-dropdown>
+                        </div>
                     @endif
                 </div>
             </div>
@@ -126,10 +128,6 @@
     <!-- Responsive Navigation Menu -->
     <div :class="{'block': open, 'hidden': ! open}" class="hidden sm:hidden">
         <div class="pt-2 pb-3 space-y-1">
-            <x-responsive-nav-link :href="route('dashboard')" :active="request()->routeIs('dashboard')">
-                {{ __('Dashboard') }}
-            </x-responsive-nav-link>
-
             @if (Auth::user()->is_admin)
                 <x-responsive-nav-link :href="route('admin.dashboard')" :active="request()->routeIs('admin.dashboard')">
                     {{ __('Admin') }}

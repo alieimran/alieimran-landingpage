@@ -33,9 +33,14 @@ Route::get('/go/social/{socialLink}', [LinkClickController::class, 'social'])->n
 
 Route::get('/sitemap.xml', SitemapController::class)->name('sitemap');
 
-Route::get('/dashboard', function () {
-    return view('dashboard');
-})->middleware(['auth', 'verified'])->name('dashboard');
+// Kept as a named route (rather than removed) because Breeze's stock
+// Auth controllers redirect to route('dashboard') internally after
+// login/verification/password-confirmation. With a single Super Admin
+// and no other authenticated user type in this app, there's nothing
+// useful to show here beyond going straight to the real dashboard.
+Route::get('/dashboard', fn () => redirect()->route('admin.dashboard'))
+    ->middleware(['auth', 'verified'])
+    ->name('dashboard');
 
 Route::middleware('auth')->group(function () {
     Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');

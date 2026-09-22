@@ -25,7 +25,7 @@ For the detailed requirement-by-requirement breakdown, see **SRS_COMPLIANCE.md**
 - **Security:** global security headers (`X-Content-Type-Options`, `X-Frame-Options`, `Referrer-Policy`, `Permissions-Policy`, HSTS when served over HTTPS) plus a per-request-nonce Content-Security-Policy. Themed custom error pages for 404/403/419/429/500/503, verified resilient to database failures (they don't depend on a DB query succeeding to render).
 - **Auth:** Breeze-based login/logout/password-reset. Public registration is fully removed.
 - **Database:** MariaDB (`alieimran_landingpage`), 16 migrations applied.
-- **Tests:** 95 Pest tests passing (`php artisan test`), Pint clean.
+- **Tests:** 96 Pest tests passing (`php artisan test`), Pint clean.
 
 ## Admin access
 
