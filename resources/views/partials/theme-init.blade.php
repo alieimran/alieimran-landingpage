@@ -1,12 +1,13 @@
 {{-- Runs synchronously, before first paint, to avoid a flash of the wrong
      theme. Must stay a plain inline <script> (not @vite'd/deferred) so it
-     executes before the page renders. When CSP headers are added later,
-     this will need a nonce or hash added to the script-src allowlist.
+     executes before the page renders. Carries the per-request CSP nonce
+     (see SecureHeaders middleware) so it's allowed to run under the
+     script-src policy.
 
      Exposes window.__setTheme(isDark) so <x-theme-toggle> can flip the
      theme and keep the theme-color meta tag (mobile browser chrome) in
      sync, without duplicating this logic in the toggle component. --}}
-<script>
+<script @if ($cspNonce ?? null) nonce="{{ $cspNonce }}" @endif>
     (function () {
         function applyTheme(isDark) {
             document.documentElement.classList.toggle('dark', isDark);

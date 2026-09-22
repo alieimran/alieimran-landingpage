@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Middleware\EnsureUserIsAdmin;
+use App\Http\Middleware\SecureHeaders;
 use App\Http\Middleware\TrackPageView;
 use Illuminate\Foundation\Application;
 use Illuminate\Foundation\Configuration\Exceptions;
@@ -17,6 +18,8 @@ return Application::configure(basePath: dirname(__DIR__))
             'admin' => EnsureUserIsAdmin::class,
             'track.visit' => TrackPageView::class,
         ]);
+
+        $middleware->append(SecureHeaders::class);
     })
     ->withExceptions(function (Exceptions $exceptions): void {
         //
