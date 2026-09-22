@@ -10,23 +10,27 @@ For the detailed requirement-by-requirement breakdown, see **SRS_COMPLIANCE.md**
 
 - **Public homepage** (`/`) — profile/hero, featured links, link hub, social links, contact CTA (links to the real contact form). Cybersecurity/IT dark theme, mobile-first, verified at 390px and 1440px.
 - **Manual dark/light toggle** — every page (public and admin) has a sun/moon button that overrides the OS preference and is remembered across visits (`localStorage`). No flash-of-wrong-theme on load.
-- **Public contact form** (`/contact`) — name/email/phone/category/subject/message, CSRF, server-side validation, `throttle:5,1` rate limiting, honeypot spam trap, email notification to the admin (mail-failure-safe — the inquiry is always saved even if the notification email fails to send).
+- **Public contact form** (`/contact`) — name/email/phone/category/subject/message, CSRF, server-side validation, `throttle:5,1` rate limiting, honeypot spam trap, email notification to the admin (mail-failure-safe).
+- **Digital Business Card** (`/card`) — hidden (404) until enabled by the admin; shows contact details and a QR code (generated on the fly, points back at `/card` itself) once live.
 - **Admin panel** (`/admin`, single Super Admin only):
-  - Dashboard with quick counts (Links, Social Links, New Inquiries — each links to its respective screen)
-  - Full CRUD: Links, Social Links, Link Categories, Site Settings (singleton profile editor)
+  - Dashboard with quick counts (Views 7d, Links, Social Links, New Inquiries — each links to its respective screen)
+  - "Manage" dropdown in the nav: Links, Social Links, Link Categories, Site Settings, Digital Card, Sections, Theme — grouped there once the flat nav got too wide for eight+ items
   - Contact inbox: list with status filter, detail view (auto-marks read), status updates, delete — with an unread-count badge in the nav
-  - "View Site" shortcut in the nav to preview the public page in a new tab
   - Analytics dashboard (`/admin/analytics`): views over the last 14 days, top pages, top referrers, browser/device breakdown, outbound link/social click counts, recent-visits feed — all first-party, no third-party tracker
-- **Analytics tracking:** page views (path, referrer, device/browser/OS, bot traffic excluded) and outbound clicks (`/go/link/{link}`, `/go/social/{socialLink}` redirect-and-log routes) recorded automatically. Privacy-conscious by design: no raw IP address is ever stored, only a one-way hash of IP+user-agent+date that rotates daily (so no visitor can be tracked across days); `analytics:prune` command (monthly via the scheduler once server cron is set up) deletes records older than 90 days by default.
-- **SEO:** canonical URLs, Open Graph + Twitter Card meta (falls back to profile data when no `seo_metadata` override is set), dynamic `/sitemap.xml` (indexable pages only), static `/robots.txt` (disallows admin/auth routes), custom SVG/PNG/ICO favicon.
-- **Auth:** Breeze-based login/logout/password-reset. Public registration is fully removed (route, controller, view, and its test all deleted).
-- **Database:** MariaDB (`alieimran_landingpage`), 12 migrations applied, seeded with default link categories, default site sections, and real-ish profile content (see "Seed data" below).
-- **Tests:** 65 Pest tests passing (`php artisan test`), Pint clean.
+  - Sections admin (`/admin/sections`): toggle/relabel/reorder the five fixed homepage blocks — edit-only, no create/delete, since section keys map 1:1 to blocks the homepage template actually knows how to render
+  - Theme admin (`/admin/theme`): primary accent color (verified working — see Known issues for what's still out of scope), logo upload, favicon upload
+  - "View Site" shortcut in the nav to preview the public page in a new tab
+- **Analytics tracking:** page views (path, referrer, device/browser/OS, bot traffic excluded) and outbound clicks (`/go/link/{link}`, `/go/social/{socialLink}`) recorded automatically. No raw IP ever stored — only a one-way hash of IP+user-agent+date that rotates daily. `analytics:prune` command (90-day default, scheduled monthly) for bounded retention.
+- **SEO:** canonical URLs, Open Graph + Twitter Card meta (falls back to profile data when no `seo_metadata` override is set), dynamic `/sitemap.xml` (indexable pages only), static `/robots.txt`, custom SVG/PNG/ICO favicon (overridable per the Theme admin page above).
+- **Security:** global security headers (`X-Content-Type-Options`, `X-Frame-Options`, `Referrer-Policy`, `Permissions-Policy`, HSTS when served over HTTPS) plus a per-request-nonce Content-Security-Policy. Themed custom error pages for 404/403/419/429/500/503, verified resilient to database failures (they don't depend on a DB query succeeding to render).
+- **Auth:** Breeze-based login/logout/password-reset. Public registration is fully removed.
+- **Database:** MariaDB (`alieimran_landingpage`), 15 migrations applied.
+- **Tests:** 81 Pest tests passing (`php artisan test`), Pint clean.
 
 ## Admin access
 
 - URL: `/admin` (redirects through `/login` if not authenticated)
-- Account: `alieimran@outlook.com` — password was set interactively, not stored anywhere in this repo or its docs. If it's lost, run `php artisan admin:create` again — it refuses to run while a Super Admin already exists, so an existing account would need to be cleared first (not something to script casually — ask before doing that).
+- Account: `alieimran@outlook.com` — password was set interactively, not stored anywhere in this repo or its docs. If it's lost, run `php artisan admin:create` again — it refuses to run while a Super Admin already exists.
 
 ## Seed data — what's real vs fabricated
 
@@ -50,21 +54,21 @@ Per an explicit instruction to seed with some fabrication where real data isn't 
 ## Known issues / environment quirks
 
 - **Vite version:** SRS baseline says Vite 8.x; Breeze 2.4.2's scaffolding still pins `^7.0.7`. Not blocking, just a version note (see TECHNOLOGY_STACK.md).
-- **Hosts resolution:** `alieimran-landingpage.test` needed a manual entry in `C:\Windows\System32\drivers\etc\hosts` — Herd's own site-detection didn't pick up the new folder under `D:\Herd` automatically the way it does for the sibling `alieimran-portfolio.test` and `jemputjemput.test` sites. Already fixed; noting it in case a future new site/subdomain hits the same thing.
-- **Theme colors/fonts/logo not yet admin-editable:** the `theme_settings` table exists but nothing reads or writes it. The current dark cybersecurity theme is implemented directly in `resources/css/app.css` and Blade components, not driven by the database. (Dark/light *mode itself* is user-toggleable now — see below — this note is specifically about admin-customizable brand colors/fonts, a separate SRS §47 sub-requirement.) If that becomes a priority, it's a distinct piece of work — wiring the DB values into the CSS custom properties at render time.
+- **Alpine.js requires `'unsafe-eval'` in the CSP:** the mobile nav, settings dropdown, delete-account confirmation modal, and theme toggle all use Alpine, which evaluates directive expressions via `Function()` — CSP's eval restriction blocks that by design. Migrating to Alpine's separate CSP build (pre-registering directive logic in JS instead of writing it inline) or replacing Alpine with hand-written vanilla JS would close this, but both are real effort — deliberately not done as a rushed side-change. Documented in the `SecureHeaders` middleware's own doc comment.
+- **Theme customization is scoped to primary accent color + logo + favicon:** secondary/background/text colors, button style, border radius, and font family are not wired to `theme_settings` yet. Doing so would mean rewriting every page's fixed Tailwind color classes to read from these settings instead — a much larger change than this pass covers. The primary-color override mechanism itself (a layered CSS override, not a rewrite) is real and verified working, so extending it to more colors is additive work, not a redesign.
 
 ## Prioritized next steps
 
 Roughly in the order they'd unblock the most SRS Definition-of-Done items (§84):
 
-1. ~~**Public Contact form**~~ — done (2026-09-22): form, validation, rate limiting, honeypot, email notification, admin inbox.
-2. ~~**SEO completeness**~~ — done (2026-09-22): canonical URL, Twitter card meta, favicon, `/sitemap.xml`, `/robots.txt`.
+1. ~~**Public Contact form**~~ — done (2026-09-22).
+2. ~~**SEO completeness**~~ — done (2026-09-22).
 3. ~~**Manual dark/light toggle**~~ — done (2026-09-22), system-wide.
-4. ~~**Analytics dashboard + visitor insights**~~ — done (2026-09-22): page views, referrers, device/browser breakdown, outbound link-click tracking, admin dashboard with charts. Country-of-visitor detection deliberately skipped for now (privacy-first default, chosen over sending visitor IPs to a third-party API or self-hosting a GeoIP database) — revisit if it turns out to matter.
-5. **Security headers + production error handling** (§53–54) — CSP/X-Content-Type-Options/etc. middleware, custom 404/403/419/429/500/503 pages, and a production `.env` profile (`APP_DEBUG=false`, hardened session/cookie settings).
-6. **Digital Business Card + QR** (§30–31) — `/card` route, and only then install Endroid QR Code.
-7. **Section management admin UI** (§46) — CRUD screen for `SiteSection` (currently DB-only).
-8. **Theme management admin UI** (§47 remainder) — colors/fonts/logo still fixed in code; dark/light mode itself is done (see above).
-9. **Deployment docs** (§72–83) — INSTALLATION.md, DEPLOYMENT.md, CPANEL_DEPLOYMENT.md, SECURITY.md, BACKUP.md, TROUBLESHOOTING.md, plus the actual cPanel deployment when ready.
+4. ~~**Analytics dashboard + visitor insights**~~ — done (2026-09-22). Country-of-visitor detection deliberately skipped (privacy-first default) — revisit if it turns out to matter.
+5. ~~**Security headers + production error handling**~~ — done (2026-09-22): CSP/security headers, themed error pages. Production `.env` profile itself (`APP_DEBUG=false`, hardened session/cookie settings) still belongs to the deployment step below, not done yet.
+6. ~~**Digital Business Card + QR**~~ — done (2026-09-22).
+7. ~~**Section management admin UI**~~ — done (2026-09-22), edit-only by design.
+8. ~~**Theme management admin UI**~~ — done (2026-09-22), scoped to primary color + logo + favicon; see Known issues for what's deferred.
+9. **Deployment docs** (§72–83) — INSTALLATION.md, DEPLOYMENT.md, CPANEL_DEPLOYMENT.md, SECURITY.md, BACKUP.md, TROUBLESHOOTING.md, plus the actual cPanel deployment when ready. The only item left from the original four-item request.
 
-None of this is started yet beyond what's listed as "live right now" above — this is a plan, not a claim of partial progress on these specific items.
+Everything above the deployment docs is genuinely done and tested, not just started — each item's own commit and DEVELOPMENT_LOG.md entry has the verification details (tests + visual/browser checks where relevant).

@@ -53,8 +53,8 @@ Legend: ✅ Done · 🟡 Partial · ⬜ Not started · — Not applicable / proc
 
 | § | Requirement | Status |
 |---|---|---|
-| 30 | `/card` digital business card | ⬜ not started |
-| 31 | QR code (Endroid) | ⬜ not started — package not installed, per stack policy of installing only when needed |
+| 30 | `/card` digital business card | ✅ public page (hidden with a 404 while disabled), admin-editable at `/admin/digital-card` |
+| 31 | QR code (Endroid) | ✅ `endroid/qr-code` installed; QR points at `/card` itself, generated on the fly as a data URI (no separate file to manage) |
 
 ## 32–35. Contact System
 
@@ -80,8 +80,8 @@ Legend: ✅ Done · 🟡 Partial · ⬜ Not started · — Not applicable / proc
 |---|---|---|---|
 | 44 | `/admin`, single Super Admin, no public registration, `admin:create` command | ✅ | registration route/controller/view deleted; `php artisan admin:create` implemented with validation |
 | 45 | Admin manages profile/sections/links/categories/social/featured/digital-card/contact/theme/SEO/analytics | 🟡 | Profile, Links, Social Links, Categories, Contact inbox done; Sections/Theme/Digital Card/SEO/Analytics not built |
-| 46 | Section management (enable, nav/homepage visibility, sort order) | 🟡 | model + homepage consumption done; no admin CRUD screen for sections yet |
-| 47 | Theme management (colors, fonts, logo, favicon, dark mode) | 🟡 | dark mode is done — every page has a manual light/dark toggle (not just OS-preference detection), applied consistently across the public site and admin; colors/fonts/logo/favicon are still fixed in code, not admin-editable |
+| 46 | Section management (enable, nav/homepage visibility, sort order) | ✅ `/admin/sections` — edit-only by design (no create/delete), since section keys map 1:1 to fixed blocks in the homepage template |
+| 47 | Theme management (colors, fonts, logo, favicon, dark mode) | 🟡 | dark mode: ✅ done, manual toggle on every page. `/admin/theme`: ✅ primary accent color (layered CSS override, verified working), logo upload, favicon upload. Deliberately not done: secondary/background/text colors, button style, border radius, font family — would need every page's fixed Tailwind color classes rewritten to read from these settings, out of scope for this pass (see DESIGN_SYSTEM.md) |
 | 48 | Admin auth security (hashing, throttling, CSRF, session regen, secure logout, cookies) | ✅ | Laravel/Breeze defaults; login route throttled; bcrypt hashing |
 | 49 | Single Super Admin, Spatie Permission not required for V1 | ✅ | `users.is_admin` boolean, deliberately no RBAC package |
 | 50 | Audit logging | ⬜ | Spatie Activitylog not installed; no admin action log |
@@ -92,8 +92,8 @@ Legend: ✅ Done · 🟡 Partial · ⬜ Not started · — Not applicable / proc
 |---|---|---|---|
 | 51 | OWASP/defense-in-depth mindset | 🟡 | applied throughout; formal review not done |
 | 52 | File upload security | ✅ | MIME+extension allow-list (jpg/jpeg/png/webp, SVG deliberately excluded), Laravel's `image` rule (real file inspection, not just extension), generated UUID filenames, old file cleanup on replace |
-| 53 | Security headers (CSP, X-Content-Type-Options, Referrer-Policy, HSTS, frame protection) | ⬜ | no header middleware configured yet |
-| 54 | Production error handling, `APP_DEBUG=false`, custom error pages | ⬜ | still local dev config; production `.env` not created |
+| 53 | Security headers (CSP, X-Content-Type-Options, Referrer-Policy, HSTS, frame protection) | ✅ | `SecureHeaders` middleware, global. CSP uses nonces + `strict-dynamic` rather than broad host allowlists; documented exception for `'unsafe-eval'` (Alpine.js) and `style-src 'unsafe-inline'` (inline chart/gradient styles) — see the middleware's own doc comment and DESIGN_SYSTEM.md |
+| 54 | Production error handling, `APP_DEBUG=false`, custom error pages | 🟡 | themed custom 404/403/419/429/500/503 pages done, verified DB-failure-resilient (they don't themselves depend on a working database query); production `.env` profile not created yet — still local dev config, tracked under Deployment docs |
 | 55 | Server-side input validation | ✅ | Form Requests on every admin write path |
 | 56 | Output escaping | ✅ | Blade's default `{{ }}` escaping used throughout; no raw HTML output of user content |
 | 57 | Mass assignment protection | ✅ | explicit `$fillable` everywhere; `users.is_admin` deliberately excluded from `User`'s fillable list, only settable via `forceFill` in the `admin:create` command |
@@ -142,13 +142,13 @@ See **TECHNOLOGY_STACK.md** for the full version matrix.
 | 10 | Sections enable/disable | 🟡 model + homepage consumption only, no admin UI |
 | 11 | Portfolio link works | ✅ |
 | 12 | External app links work | ✅ (link mechanism is generic) |
-| 13–14 | Digital card + QR | ⬜ |
+| 13–14 | Digital card + QR | ✅ |
 | 15–16 | Contact inquiries stored + email notification | ✅ |
 | 17 | Root SEO works | ✅ |
 | 18 | Sitemap works | ✅ |
 | 19 | Analytics works where enabled | ✅ |
-| 20 | Security controls implemented | 🟡 |
-| 21 | Error handling implemented | ⬜ |
+| 20 | Security controls implemented | ✅ |
+| 21 | Error handling implemented | ✅ |
 | 22 | Automated tests pass | ✅ 40/40 |
 | 23 | Production config hardened | ⬜ |
 | 24 | Documentation complete | 🟡 in progress |
@@ -167,6 +167,6 @@ These govern *how* the project is built rather than a feature to check off — f
 
 ## Summary
 
-**Solid:** architecture boundaries, core CMS (Links/Social/Categories/Settings), admin auth, the full Contact system (form/validation/rate-limiting/honeypot/email/admin inbox), file upload security, mass-assignment/IDOR protection, SEO (meta tags/sitemap/robots/favicon), manual dark/light theming across the whole system, privacy-conscious first-party analytics (page views + link-click tracking, no raw IPs stored, bounded retention), testing coverage for what's built, responsive design, the shared design system.
+**Solid:** architecture boundaries, core CMS (Links/Social/Categories/Settings/Sections/Theme-basics/Digital-Card), admin auth, the full Contact system (form/validation/rate-limiting/honeypot/email/admin inbox), file upload security, mass-assignment/IDOR protection, SEO (meta tags/sitemap/robots/favicon), manual dark/light theming across the whole system, privacy-conscious first-party analytics (page views + link-click tracking, no raw IPs stored, bounded retention), security headers + CSP + custom error pages, Digital Business Card + QR, testing coverage for what's built (81 tests), responsive design, the shared design system.
 
-**Biggest gaps to close next:** Digital Business Card + QR, security headers, production error handling, and the deployment/backup docs. See PROJECT_STATUS.md for the prioritized next-steps list.
+**Biggest gaps to close next:** deployment/backup docs (in progress), full theme color customization (deliberately scoped down to primary accent + logo + favicon this pass), Section/Theme create-new-entries (deliberately edit-only by design). See PROJECT_STATUS.md for the prioritized next-steps list.

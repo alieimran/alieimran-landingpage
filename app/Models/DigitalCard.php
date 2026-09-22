@@ -26,6 +26,6 @@ class DigitalCard extends Model
 
     public static function current(): self
     {
-        return self::query()->firstOrCreate(['id' => 1]);
+        return self::query()->firstOrCreate(['id' => 1], ['name' => config('app.name')]);
     }
 }

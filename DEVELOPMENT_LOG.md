@@ -2,6 +2,39 @@
 
 Reverse-chronological. Each entry is what changed and why — not a restatement of the diff (that's what `git log` is for).
 
+## 2026-09-22 — Security headers, Digital Business Card + QR, Section/Theme admin UIs
+
+Requested as one batch: all four remaining items from the prioritized next-steps list. Worked through them in risk order (security first, then the smaller features).
+
+**Security headers + production error handling (§53–54):**
+- `SecureHeaders` middleware (global): X-Content-Type-Options, X-Frame-Options, Referrer-Policy, Permissions-Policy, HSTS when served over HTTPS, and a per-request-nonce CSP using `strict-dynamic` rather than broad host allowlisting.
+- Real bug caught by actually checking browser console errors, not just reading HTML: with `strict-dynamic` present, browsers ignore `'self'` entirely for script-src, which would have silently blocked Vite's own generated `<script>`/`<link>` tags. Fixed via Laravel's built-in `Vite::useCspNonce()` hook, which stamps the same nonce onto those tags automatically.
+- Second real violation caught the same way: Alpine.js needs `'unsafe-eval'` (it evaluates directive expressions via `Function()` internally). Considered fully removing Alpine for hand-written vanilla JS to avoid the CSP weakening, but the delete-account confirmation modal's focus-trap logic makes that a real migration, not a quick swap — allowed `'unsafe-eval'` as a documented, deliberate exception rather than rushing a risky rewrite under an unrelated task. Same reasoning for `style-src 'unsafe-inline'` (inline chart-bar/gradient styles used throughout).
+- Themed custom error pages for 404/403/419/429/500/503. Caught a real resiliency bug here too: the pages initially queried `theme_settings` (via the favicon and theme-override partials) unconditionally, which meant a database failure — exactly the kind of thing a 500 page needs to survive — would have crashed the error page itself. Wrapped those specific queries in try/catch with a silent fallback.
+- 3 new tests.
+
+**Digital Business Card + QR (§30–31):**
+- Installed `endroid/qr-code` (only now that the feature needing it actually exists, per the project's standing "don't pre-install" rule).
+- `/card` — hidden behind a 404 until the admin enables it; QR code generated on the fly as a data URI (`PngWriter`, GD backend) pointing back at the card's own URL, no separate image file to manage.
+- Found and fixed a genuine pre-existing bug while building this: `digital_cards.name` has a `NOT NULL` constraint with no default, but `DigitalCard::current()` never supplied one — a latent bug from the foundation phase that had simply never been triggered because nothing used this table until now. Fixed the same way `SiteSetting::current()` already handled it (default to `config('app.name')`).
+- Admin edit screen at `/admin/digital-card`.
+- 4 new tests.
+
+**Section management admin UI (§46):**
+- `/admin/sections` — deliberately edit-only (title, description, enabled/nav-visible/homepage-visible, sort order), no create or delete. Section keys correspond 1:1 to hard-coded conditional blocks in `home.blade.php`, so letting an admin invent a new section key would just produce a row the template doesn't know how to render.
+- 4 new tests, including one confirming a disabled section actually disappears from `SiteSection::onHomepage()`.
+
+**Theme management admin UI (§47 remainder):**
+- Scoped deliberately rather than attempting full color/font customization in one pass: primary accent color, logo upload, favicon upload. Rewiring secondary/background/text colors, button style, border radius, and font family would mean replacing every page's fixed Tailwind color classes with something reading from `theme_settings` at render time — a much larger, riskier change than fits this task, and said so directly in the admin UI itself rather than silently shipping a partial illusion of full customization.
+- The primary-color override is a real, working mechanism, not a stub: a `<style>` block with `!important` overrides on the highest-visibility accent classes (buttons, links, badges), only emitted when the admin has actually changed the color away from the default. Verified by temporarily setting it to orange, confirming the change rendered across the homepage in a real browser screenshot, then reverting.
+- Logo/favicon uploads exclude SVG, consistent with the reasoning already applied to link and profile-photo uploads earlier in the project (a directly-navigated SVG file can execute embedded scripts, even though an `<img src="...">` reference can't).
+- Found and fixed a second pre-existing bug: `theme_settings.primary_color` defaulted to `#0a0a0a`, a leftover from before the emerald cybersecurity theme existed, which never matched anything actually rendered. Fixed via a new migration (not by editing the already-run original one) that updates both the column default and the one existing row.
+- 5 new tests.
+
+**Navigation restructuring:** the admin nav was approaching ten top-level items after this batch, so grouped the less-frequently-checked management screens (Links, Social Links, Categories, Site Settings, Digital Card, Sections, Theme) into a "Manage" dropdown, keeping Dashboard/Analytics/Contact as top-level since those get checked most often.
+
+**Total: 16 new tests, suite at 81 passing.** Verified visually throughout via real browser screenshots (not just HTML inspection) — the Manage dropdown, all four new admin screens, the working `/card` page with its QR code, and the primary-color override actually changing the rendered page.
+
 ## 2026-09-22 — First-party analytics dashboard (§36–39)
 
 - Requested mid-session: admin-visible graphs, visitor insights, "which country," "is there any interaction."

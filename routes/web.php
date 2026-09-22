@@ -3,10 +3,14 @@
 use App\Http\Controllers\Admin\AnalyticsController as AdminAnalyticsController;
 use App\Http\Controllers\Admin\ContactInquiryController as AdminContactInquiryController;
 use App\Http\Controllers\Admin\DashboardController as AdminDashboardController;
+use App\Http\Controllers\Admin\DigitalCardController as AdminDigitalCardController;
 use App\Http\Controllers\Admin\LinkCategoryController;
 use App\Http\Controllers\Admin\LinkController;
+use App\Http\Controllers\Admin\SiteSectionController as AdminSiteSectionController;
 use App\Http\Controllers\Admin\SiteSettingController;
 use App\Http\Controllers\Admin\SocialLinkController;
+use App\Http\Controllers\Admin\ThemeController as AdminThemeController;
+use App\Http\Controllers\CardController;
 use App\Http\Controllers\ContactController;
 use App\Http\Controllers\HomeController;
 use App\Http\Controllers\LinkClickController;
@@ -17,6 +21,7 @@ use Illuminate\Support\Facades\Route;
 Route::middleware('track.visit')->group(function () {
     Route::get('/', HomeController::class)->name('home');
     Route::get('/contact', [ContactController::class, 'create'])->name('contact.create');
+    Route::get('/card', CardController::class)->name('card');
 });
 
 Route::post('/contact', [ContactController::class, 'store'])
@@ -50,6 +55,15 @@ Route::middleware(['auth', 'verified', 'admin'])->prefix('admin')->name('admin.'
     Route::put('site-settings', [SiteSettingController::class, 'update'])->name('site-settings.update');
 
     Route::resource('contact-inquiries', AdminContactInquiryController::class)->only(['index', 'show', 'update', 'destroy']);
+
+    Route::get('digital-card', [AdminDigitalCardController::class, 'edit'])->name('digital-card.edit');
+    Route::put('digital-card', [AdminDigitalCardController::class, 'update'])->name('digital-card.update');
+
+    Route::get('sections', [AdminSiteSectionController::class, 'index'])->name('sections.index');
+    Route::put('sections/{section}', [AdminSiteSectionController::class, 'update'])->name('sections.update');
+
+    Route::get('theme', [AdminThemeController::class, 'edit'])->name('theme.edit');
+    Route::put('theme', [AdminThemeController::class, 'update'])->name('theme.update');
 });
 
 require __DIR__.'/auth.php';

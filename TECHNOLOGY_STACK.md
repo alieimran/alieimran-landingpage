@@ -37,8 +37,8 @@ Baseline defined by the SRS (§64–67), checked against what's actually install
 | Component | Status | Notes |
 |---|---|---|
 | Intervention Image | **not installed** | no image processing need yet — uploads are stored as-is after MIME/extension validation |
-| Endroid QR Code | **not installed** | deferred until the Digital Business Card (SRS §30–31) is built |
-| GD / WebP / AVIF | available in PHP build | not yet exercised by app code |
+| Endroid QR Code | 6.1 installed (`endroid/qr-code` ^6.1) | used by `CardController` to generate the `/card` QR code as an inline data URI (PngWriter, GD backend) |
+| GD / WebP / AVIF | available in PHP build | GD used by Endroid QR Code; WebP/AVIF still not exercised by app code |
 
 ## Testing
 
@@ -48,7 +48,7 @@ Baseline defined by the SRS (§64–67), checked against what's actually install
 | Pest Plugin Laravel | — | 4.1 (`pestphp/pest-plugin-laravel` ^4.1) |
 | PHPUnit | 12.5.33 | ^12.5.12 (via Pest) |
 
-65 tests passing as of 2026-09-22 (`php artisan test`).
+81 tests passing as of 2026-09-22 (`php artisan test`).
 
 ## Tooling
 
@@ -63,6 +63,5 @@ Per SRS §67 ("not every installed package must be used"), the following remain 
 - **Spatie Permission** — single Super Admin model doesn't need role/permission management.
 - **Spatie Activitylog** — no admin audit trail built yet.
 - **Intervention Image** — no resizing/cropping/format-conversion requirement yet.
-- **Endroid QR Code** — Digital Business Card not built yet.
 
 When any of these features gets built, install the corresponding package at that point — don't pre-install speculatively.

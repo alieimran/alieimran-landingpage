@@ -4,6 +4,7 @@
         <meta charset="utf-8">
         @include('partials.theme-init')
         @include('partials.favicon')
+        @include('partials.theme-overrides')
         <meta name="viewport" content="width=device-width, initial-scale=1">
         <meta name="csrf-token" content="{{ csrf_token() }}">
 
@@ -21,7 +22,7 @@
         <div class="min-h-screen flex flex-col sm:justify-center items-center pt-6 sm:pt-0 bg-gray-100 dark:bg-gray-950">
             <div class="w-full sm:max-w-md flex items-center justify-between px-6 sm:px-0">
                 <a href="/" class="flex items-center gap-2">
-                    <x-application-logo class="w-12 h-12 text-gray-800 dark:text-emerald-400" />
+                    <x-site-logo class="w-12 h-12" />
                     <span class="font-mono text-xs uppercase tracking-widest text-gray-500 dark:text-gray-400">admin console</span>
                 </a>
                 <x-theme-toggle class="w-9 h-9" />

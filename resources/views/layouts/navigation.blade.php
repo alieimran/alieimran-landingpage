@@ -6,7 +6,7 @@
                 <!-- Logo -->
                 <div class="shrink-0 flex items-center gap-2">
                     <a href="{{ route('dashboard') }}" class="flex items-center gap-2">
-                        <x-application-logo class="block h-8 w-auto fill-current text-gray-800 dark:text-emerald-400" />
+                        <x-site-logo class="block h-8 w-auto" />
                     </a>
                     @if (Auth::user()->is_admin)
                         <span class="hidden sm:inline-flex items-center gap-1.5 rounded-full border border-emerald-500/30 bg-emerald-500/10 px-2.5 py-0.5 font-mono text-[10px] font-semibold uppercase tracking-widest text-emerald-600 dark:text-emerald-400">
@@ -26,23 +26,14 @@
                     </x-nav-link>
 
                     @if (Auth::user()->is_admin)
+                        @php
+                            $manageRoutes = ['admin.links.*', 'admin.social-links.*', 'admin.link-categories.*', 'admin.site-settings.*', 'admin.digital-card.*', 'admin.sections.*', 'admin.theme.*'];
+                        @endphp
                         <x-nav-link :href="route('admin.dashboard')" :active="request()->routeIs('admin.dashboard')">
                             {{ __('Admin') }}
                         </x-nav-link>
                         <x-nav-link :href="route('admin.analytics')" :active="request()->routeIs('admin.analytics')">
                             {{ __('Analytics') }}
-                        </x-nav-link>
-                        <x-nav-link :href="route('admin.links.index')" :active="request()->routeIs('admin.links.*')">
-                            {{ __('Links') }}
-                        </x-nav-link>
-                        <x-nav-link :href="route('admin.social-links.index')" :active="request()->routeIs('admin.social-links.*')">
-                            {{ __('Social Links') }}
-                        </x-nav-link>
-                        <x-nav-link :href="route('admin.link-categories.index')" :active="request()->routeIs('admin.link-categories.*')">
-                            {{ __('Categories') }}
-                        </x-nav-link>
-                        <x-nav-link :href="route('admin.site-settings.edit')" :active="request()->routeIs('admin.site-settings.*')">
-                            {{ __('Site Settings') }}
                         </x-nav-link>
                         <x-nav-link :href="route('admin.contact-inquiries.index')" :active="request()->routeIs('admin.contact-inquiries.*')">
                             {{ __('Contact') }}
@@ -50,6 +41,39 @@
                                 <span class="ml-1.5 inline-flex items-center justify-center h-4 min-w-4 px-1 rounded-full bg-emerald-500 text-white text-[10px] font-semibold">{{ $newInquiryCount }}</span>
                             @endif
                         </x-nav-link>
+
+                        <div class="inline-flex items-center" x-data="{ manageOpen: false }" @click.outside="manageOpen = false">
+                            <button
+                                @click="manageOpen = ! manageOpen"
+                                class="inline-flex items-center gap-1 px-1 pt-1 border-b-2 text-sm font-medium leading-5 transition duration-150 ease-in-out focus:outline-none {{ request()->routeIs($manageRoutes) ? 'border-emerald-500 dark:border-emerald-400 text-gray-900 dark:text-gray-100' : 'border-transparent text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200 hover:border-gray-300 dark:hover:border-gray-700' }}"
+                            >
+                                {{ __('Manage') }}
+                                <svg class="w-3.5 h-3.5" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z" clip-rule="evenodd" /></svg>
+                            </button>
+
+                            <div
+                                x-show="manageOpen"
+                                x-transition:enter="transition ease-out duration-200"
+                                x-transition:enter-start="opacity-0 scale-95"
+                                x-transition:enter-end="opacity-100 scale-100"
+                                x-transition:leave="transition ease-in duration-75"
+                                x-transition:leave-start="opacity-100 scale-100"
+                                x-transition:leave-end="opacity-0 scale-95"
+                                class="absolute z-50 mt-32 w-48 rounded-md shadow-lg origin-top-left"
+                                style="display: none;"
+                                @click="manageOpen = false"
+                            >
+                                <div class="rounded-md ring-1 ring-black ring-opacity-5 py-1 bg-white dark:bg-gray-800">
+                                    <x-dropdown-link :href="route('admin.links.index')">{{ __('Links') }}</x-dropdown-link>
+                                    <x-dropdown-link :href="route('admin.social-links.index')">{{ __('Social Links') }}</x-dropdown-link>
+                                    <x-dropdown-link :href="route('admin.link-categories.index')">{{ __('Categories') }}</x-dropdown-link>
+                                    <x-dropdown-link :href="route('admin.site-settings.edit')">{{ __('Site Settings') }}</x-dropdown-link>
+                                    <x-dropdown-link :href="route('admin.digital-card.edit')">{{ __('Digital Card') }}</x-dropdown-link>
+                                    <x-dropdown-link :href="route('admin.sections.index')">{{ __('Sections') }}</x-dropdown-link>
+                                    <x-dropdown-link :href="route('admin.theme.edit')">{{ __('Theme') }}</x-dropdown-link>
+                                </div>
+                            </div>
+                        </div>
                     @endif
                 </div>
             </div>
@@ -137,6 +161,15 @@
                 </x-responsive-nav-link>
                 <x-responsive-nav-link :href="route('admin.site-settings.edit')" :active="request()->routeIs('admin.site-settings.*')">
                     {{ __('Site Settings') }}
+                </x-responsive-nav-link>
+                <x-responsive-nav-link :href="route('admin.digital-card.edit')" :active="request()->routeIs('admin.digital-card.*')">
+                    {{ __('Digital Card') }}
+                </x-responsive-nav-link>
+                <x-responsive-nav-link :href="route('admin.sections.index')" :active="request()->routeIs('admin.sections.*')">
+                    {{ __('Sections') }}
+                </x-responsive-nav-link>
+                <x-responsive-nav-link :href="route('admin.theme.edit')" :active="request()->routeIs('admin.theme.*')">
+                    {{ __('Theme') }}
                 </x-responsive-nav-link>
                 <x-responsive-nav-link :href="route('admin.contact-inquiries.index')" :active="request()->routeIs('admin.contact-inquiries.*')">
                     {{ __('Contact') }}{{ $newInquiryCount > 0 ? " ({$newInquiryCount})" : '' }}
