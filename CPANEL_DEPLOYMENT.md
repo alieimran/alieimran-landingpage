@@ -2,22 +2,49 @@
 
 Host-specific steps for this project's actual production environment, per the SRS (§72): **JimatHosting cPanel**, SSH on **port 222**, PHP 8.4.x, MariaDB 11.4.x.
 
-This file assumes `DEPLOYMENT.md`'s general process; it covers only what's specific to cPanel/this host. **Not yet exercised against the real host** — write this up before the first real deploy, then correct anything that turns out wrong in practice, since cPanel configurations vary meaningfully between providers.
+This file assumes `DEPLOYMENT.md`'s general process; it covers only what's specific to cPanel/this host.
+
+**Confirmed with JimatHosting support and by direct SSH testing (2026-09-23):**
+- cPanel username: `alieimra`; home directory: `/home2/alieimra` (**not** `/home/alieimra` — this cPanel account uses `/home2`, adjust any path examples below accordingly)
+- SSH access confirmed working: `ssh -p 222 alieimra@alieimran.com`
+- PHP CLI: `8.4.12`, matches the PHP Selector's web-server setting ✓
+- Laravel-required extensions all present: bcmath, ctype, curl, dom, fileinfo, filter, hash, mbstring, openssl, pcre, PDO, pdo_mysql, session, tokenizer, xml ✓ (ionCube Loader is also present, harmless)
+- Git CLI available over SSH: `2.48.2` ✓
+- Composer: not preinstalled, but installable without root — see below ✓ (now installed)
+- MariaDB server version: `11.4.8-MariaDB-log`
+- npm is **not** available on the server — confirms `DEPLOYMENT.md`'s assumption that frontend assets must be built locally and shipped as artifacts
+- Node.js and Cron Jobs are available as cPanel menu features
+
+**Still open before first deploy:**
+- [ ] Confirm `~/bin` is actually persisted in `PATH` via `~/.bashrc` (see Composer section below — the first attempt to write this had a typo and needs re-checking)
+- [ ] Whether `git clone`/`git pull` of this repo works directly over SSH vs. needing cPanel's Git Version Control UI (repo may be private — check auth method, e.g. deploy key)
 
 ## SSH access
 
 ```bash
-ssh -p 222 <cpanel-username>@<host>
+ssh -p 222 alieimra@alieimran.com
 ```
 
-Confirm the actual hostname/username with the hosting provider's welcome email or cPanel's "SSH Access" panel before the first deploy — placeholders only, not guessed.
+Confirmed working 2026-09-23. Home directory is `/home2/alieimra`.
+
+## Composer
+
+Not preinstalled on this host. Installed manually into the home directory (no root needed):
+
+```bash
+cd ~
+curl -sS https://getcomposer.org/installer | php
+mkdir -p ~/bin
+mv composer.phar ~/bin/composer
+chmod +x ~/bin/composer
+```
+
+`~/bin` is already on `PATH` by default in this cPanel account's `.bashrc`, so no further PATH edit was strictly needed — confirmed working via `composer -v` (2.10.3). If a future session can't find `composer`, check `grep bin ~/.bashrc` and add `export PATH="$HOME/bin:$PATH"` with `>>` (not `..`) if missing.
 
 ## PHP version
 
-cPanel hosts typically offer multiple PHP versions via "MultiPHP Manager" or `.htaccess`/`.cpanel.yml`. Confirm PHP 8.4.x is selected for this domain specifically — a mismatch here is a common and confusing source of "works locally, breaks in production" bugs (e.g. this app uses PHP 8.4 syntax in places).
-
 ```bash
-php -v   # after SSH, confirm the CLI PHP version matches what the web server uses — cPanel sometimes differs between the two
+php -v   # confirm CLI PHP is 8.4.x, matching the PHP Selector setting for the web server
 ```
 
 ## Directory layout
@@ -62,10 +89,10 @@ If git isn't available server-side, deploy via SSH manually following `DEPLOYMEN
 This app has one scheduled task: `analytics:prune`, monthly (see `routes/console.php`). Laravel's scheduler needs a single cron entry that fires every minute; cPanel's "Cron Jobs" tool:
 
 ```
-* * * * * cd /home/<cpanel-username>/alieimran-landingpage && php artisan schedule:run >> /dev/null 2>&1
+* * * * * cd /home2/alieimra/alieimran-landingpage && php artisan schedule:run >> /dev/null 2>&1
 ```
 
-Adjust the path to match wherever the app actually lives on this host.
+Adjust the path if the app ends up cloned somewhere other than `~/alieimran-landingpage`.
 
 ## SSL/HTTPS
 
