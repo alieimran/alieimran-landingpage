@@ -11,6 +11,19 @@ class UpdateSocialLinkRequest extends FormRequest
         return $this->user()?->is_admin ?? false;
     }
 
+    /**
+     * Unchecked HTML checkboxes are omitted from the request entirely,
+     * not sent as false — without this, unchecking "Enabled" and
+     * saving would silently leave the social link enabled.
+     */
+    protected function prepareForValidation(): void
+    {
+        $this->merge([
+            'enabled' => $this->boolean('enabled'),
+            'featured' => $this->boolean('featured'),
+        ]);
+    }
+
     public function rules(): array
     {
         return [

@@ -25,6 +25,15 @@ class SiteSectionController extends Controller
 
     public function update(Request $request, SiteSection $section): RedirectResponse
     {
+        // Unchecked HTML checkboxes are omitted from the request
+        // entirely, not sent as false — without this, unchecking a
+        // visibility box and saving would silently leave it checked.
+        $request->merge([
+            'enabled' => $request->boolean('enabled'),
+            'nav_visible' => $request->boolean('nav_visible'),
+            'homepage_visible' => $request->boolean('homepage_visible'),
+        ]);
+
         $data = $request->validate([
             'title' => ['required', 'string', 'max:255'],
             'description' => ['nullable', 'string', 'max:500'],

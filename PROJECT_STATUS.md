@@ -25,7 +25,7 @@ For the detailed requirement-by-requirement breakdown, see **SRS_COMPLIANCE.md**
 - **Security:** global security headers (`X-Content-Type-Options`, `X-Frame-Options`, `Referrer-Policy`, `Permissions-Policy`, HSTS when served over HTTPS) plus a per-request-nonce Content-Security-Policy. Themed custom error pages for 404/403/419/429/500/503, verified resilient to database failures (they don't depend on a DB query succeeding to render).
 - **Auth:** Breeze-based login/logout/password-reset. Public registration is fully removed.
 - **Database:** MariaDB (`alieimran_landingpage`), 16 migrations applied.
-- **Tests:** 81 Pest tests passing (`php artisan test`), Pint clean.
+- **Tests:** 95 Pest tests passing (`php artisan test`), Pint clean.
 
 ## Admin access
 
@@ -56,6 +56,17 @@ Per an explicit instruction to seed with some fabrication where real data isn't 
 - **Vite version:** SRS baseline says Vite 8.x; Breeze 2.4.2's scaffolding still pins `^7.0.7`. Not blocking, just a version note (see TECHNOLOGY_STACK.md).
 - **Alpine.js requires `'unsafe-eval'` in the CSP:** the mobile nav, settings dropdown, delete-account confirmation modal, and theme toggle all use Alpine, which evaluates directive expressions via `Function()` — CSP's eval restriction blocks that by design. Migrating to Alpine's separate CSP build (pre-registering directive logic in JS instead of writing it inline) or replacing Alpine with hand-written vanilla JS would close this, but both are real effort — deliberately not done as a rushed side-change. Documented in the `SecureHeaders` middleware's own doc comment.
 - **Theme customization is scoped to primary accent color + logo + favicon:** secondary/background/text colors, button style, border radius, and font family are not wired to `theme_settings` yet. Doing so would mean rewriting every page's fixed Tailwind color classes to read from these settings instead — a much larger change than this pass covers. The primary-color override mechanism itself (a layered CSS override, not a rewrite) is real and verified working, so extending it to more colors is additive work, not a redesign.
+- **Honeypot stealth isn't airtight against every bot:** the contact form's honeypot check runs in the controller, *after* Laravel's Form Request validation has already run. A bot that fills the honeypot field but also sends otherwise-invalid data (missing a required field, say) gets a real validation-error response rather than the intended stealth "looks like success" response — the spam is still blocked either way (nothing gets stored or emailed), but the response doesn't always hide that a trap exists. Not fixed, since doing so would mean restructuring how the honeypot check relates to the validation pipeline for a cosmetic edge case against unsophisticated bots specifically.
+
+## Bug audit (2026-09-22)
+
+A systematic pass through every custom controller and model found and fixed several real bugs — full details in `DEVELOPMENT_LOG.md`'s corresponding entry:
+- Unchecked checkboxes silently failed to save as `false` on 5 different admin forms (Links, Social Links, Site Settings, Digital Card, Sections) — the single most impactful find, since it meant "disabling" something often didn't actually disable it.
+- Link category rename was built but unreachable — no UI ever called the working `update()` route.
+- `/go/link/{id}` and `/go/social/{id}` redirects worked even for disabled/expired links.
+- The admin "Manage" nav dropdown was positioned with a `mt-32` guess instead of proper CSS, and was visibly wrong.
+
+All four are fixed, tested (10 new/updated tests), and verified in a real browser where visual. Nothing outstanding from this pass.
 
 ## Prioritized next steps
 

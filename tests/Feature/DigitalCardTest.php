@@ -30,6 +30,18 @@ test('admin can update the digital card', function () {
     expect(DigitalCard::current()->name)->toBe('Alie Imran');
 });
 
+test('unchecking enabled on update actually disables the card', function () {
+    DigitalCard::current()->update(['name' => 'Alie Imran', 'enabled' => true]);
+
+    $this->actingAs(admin())->put(route('admin.digital-card.update'), [
+        'name' => 'Alie Imran',
+        // enabled intentionally omitted
+    ])->assertRedirect(route('admin.digital-card.edit'));
+
+    expect(DigitalCard::current()->enabled)->toBeFalse();
+    $this->get(route('card'))->assertNotFound();
+});
+
 test('non-admins cannot update the digital card', function () {
     $this->actingAs(User::factory()->create())->put(route('admin.digital-card.update'), [
         'name' => 'Nope',

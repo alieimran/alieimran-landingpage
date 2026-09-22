@@ -11,6 +11,18 @@ class UpdateDigitalCardRequest extends FormRequest
         return $this->user()?->is_admin ?? false;
     }
 
+    /**
+     * Unchecked HTML checkboxes are omitted from the request entirely,
+     * not sent as false — without this, unchecking "Card enabled" and
+     * saving would silently leave the card publicly visible.
+     */
+    protected function prepareForValidation(): void
+    {
+        $this->merge([
+            'enabled' => $this->boolean('enabled'),
+        ]);
+    }
+
     public function rules(): array
     {
         return [

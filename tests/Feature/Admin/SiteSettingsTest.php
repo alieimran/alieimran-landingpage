@@ -26,6 +26,19 @@ test('site settings reject a garbage cta url', function () {
     ])->assertSessionHasErrors('primary_cta_url');
 });
 
+test('unchecking profile visible on update actually hides the profile', function () {
+    $setting = SiteSetting::current();
+    $setting->update(['profile_visible' => true]);
+
+    $this->actingAs(admin())->put(route('admin.site-settings.update'), [
+        'full_name' => 'Alie Imran',
+        'display_name' => 'Alie Imran',
+        // profile_visible intentionally omitted
+    ])->assertRedirect(route('admin.site-settings.edit'));
+
+    expect(SiteSetting::current()->profile_visible)->toBeFalse();
+});
+
 test('non-admins cannot update site settings', function () {
     $this->actingAs(User::factory()->create())->put(route('admin.site-settings.update'), [
         'full_name' => 'Nope',

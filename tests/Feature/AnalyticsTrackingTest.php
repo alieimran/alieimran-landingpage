@@ -61,6 +61,26 @@ test('visiting a social link redirect records a click and redirects to the desti
     ]);
 });
 
+test('a disabled link redirect 404s instead of redirecting', function () {
+    $link = Link::create(['title' => 'Disabled', 'url' => 'https://example.com', 'enabled' => false]);
+
+    $this->get(route('go.link', $link))->assertNotFound();
+    expect(AnalyticsEvent::count())->toBe(0);
+});
+
+test('an expired link redirect 404s instead of redirecting', function () {
+    $link = Link::create(['title' => 'Expired', 'url' => 'https://example.com', 'end_date' => now()->subDay()]);
+
+    $this->get(route('go.link', $link))->assertNotFound();
+});
+
+test('a disabled social link redirect 404s instead of redirecting', function () {
+    $social = SocialLink::create(['platform' => 'Disabled', 'url' => 'https://example.com', 'enabled' => false]);
+
+    $this->get(route('go.social', $social))->assertNotFound();
+    expect(AnalyticsEvent::count())->toBe(0);
+});
+
 test('admin can view the analytics dashboard', function () {
     $this->actingAs(admin())->get(route('admin.analytics'))->assertOk();
 });

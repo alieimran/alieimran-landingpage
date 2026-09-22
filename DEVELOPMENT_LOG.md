@@ -2,6 +2,24 @@
 
 Reverse-chronological. Each entry is what changed and why — not a restatement of the diff (that's what `git log` is for).
 
+## 2026-09-22 — Bug-hunting pass: "recheck and fix all bugs"
+
+Requested as a general audit, not tied to a specific feature. Went through every custom controller and model systematically, and found several real, confirmed bugs — not just theoretical ones:
+
+**Checkbox omission bug (the big one, affecting 5 forms):** unchecked HTML checkboxes are never submitted by browsers — the field is simply absent from the request, not sent as `false`. Every admin form using `$request->validated()` (or plain `$request->validate()`) directly as update data inherited this: unchecking "Enabled," "Featured," "Profile visible," "Card enabled," or any of the Sections visibility boxes and clicking Save looked like it worked (redirect, success message) but silently left the database value unchanged. Reproduced directly against the model first to confirm before touching any code. Fixed via `prepareForValidation()` (`$this->merge(['field' => $this->boolean('field')])`) in every affected Form Request, and directly in `SiteSectionController` (which uses a plain `Request`, not a FormRequest). Affected: Links (enabled/featured/open_in_new_tab), Social Links (enabled/featured), Site Settings (profile_visible), Digital Card (enabled), Sections (enabled/nav_visible/homepage_visible).
+
+The existing test suite hadn't caught this because every test that touched these fields sent an explicit `'0'` string rather than omitting the key — and PHP casts the string `"0"` to `false` anyway, so those tests passed even with the bug present. Added proper regression tests for all five areas that reproduce the *real* failure mode (key genuinely absent from the request), with a comment explaining why the naive explicit-`'0'` version doesn't actually catch this class of bug — so nobody "fixes" the test back to the version that doesn't test anything.
+
+**Link category rename was unreachable from the UI:** the `update()` route and controller logic worked correctly, but nothing on the Link Categories page actually called it — only create and delete were wired up. An admin fixing a typo had no option but to delete and recreate the category, which orphans every link using it (the FK is `nullOnDelete`). Added inline rename (name + sort order) directly in the index table, using the `form="id"` HTML attribute to associate multiple `<form>`s with cells in the same `<tr>` without illegal form-in-form nesting. Verified in a real browser, not just via test assertions.
+
+**Outbound link-click redirects didn't check visibility:** `/go/link/{id}` and `/go/social/{id}` would redirect (and log a click) for a link an admin had disabled or that had expired — "disabled" only ever meant "hidden from the homepage list," not "the tracked redirect URL stops working." A bookmarked or previously-indexed `/go/` URL would keep working indefinitely. Now 404s for a disabled/expired link, consistent with how the digital card page already treats "disabled."
+
+**"Manage" nav dropdown was positioned with a magic-number hack:** the hand-rolled dropdown built alongside the Section/Theme admin UIs was missing `position: relative` on its wrapper, so its `absolute`-positioned menu wasn't actually anchored to the trigger button — compensated with a guessed `mt-32`, which was still visibly wrong (the first item, "Links," was cut off above the visible dropdown in an earlier screenshot that wasn't looked at closely enough at the time). Fixed properly by reusing the existing `<x-dropdown>` component (already correctly built with `relative`/`absolute`) instead of maintaining a parallel, subtly-broken implementation. Verified the fix in a real browser screenshot.
+
+Also audited (no bug found, but worth recording as checked): all three singleton models' `current()` methods against their migrations' `NOT NULL` columns (only `DigitalCard` and `ThemeSetting` had this bug, both already fixed in earlier sessions); route ordering for resource routes; N+1 queries on every admin index page; CSRF behavior with the `form="id"` attribute pattern; 404 behavior for both explicit `abort()` calls and failed route-model binding.
+
+**10 new/updated tests, suite at 95 passing.**
+
 ## 2026-09-22 — Full documentation set (§72–83)
 
 - Replaced the stock Laravel skeleton README with a project-specific one that introduces the app and indexes the rest of the documentation set.

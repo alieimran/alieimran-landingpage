@@ -11,6 +11,21 @@ class StoreLinkRequest extends FormRequest
         return $this->user()?->is_admin ?? false;
     }
 
+    /**
+     * Unchecked HTML checkboxes are omitted from the request entirely,
+     * not sent as false — without this, unchecking "Enabled" and
+     * saving would silently leave the link enabled, since validated()
+     * only returns keys that were actually present in the input.
+     */
+    protected function prepareForValidation(): void
+    {
+        $this->merge([
+            'enabled' => $this->boolean('enabled'),
+            'featured' => $this->boolean('featured'),
+            'open_in_new_tab' => $this->boolean('open_in_new_tab'),
+        ]);
+    }
+
     public function rules(): array
     {
         return [
