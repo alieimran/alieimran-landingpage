@@ -11,25 +11,32 @@ Run through the checklist at the bottom of this file. Don't skip it — several 
 Per SRS §76, the production server is not assumed to have Node.js/NPM available. Frontend assets are built **locally**, committed or transferred as built artifacts, not built on the server:
 
 ```
-Local development
+On the PC
   → npm run build              (produces public/build/*)
-  → git commit + push
-  → SSH to server
-  → git pull
-  → composer install --no-dev --optimize-autoloader
-  → php artisan migrate --force
-  → php artisan config:cache
-  → php artisan route:cache
-  → php artisan view:cache
-  → php artisan event:cache
+  → git add -A && git commit   (public/build IS committed)
+  → git push
+In cPanel Terminal
+  → ~/deploy-landingpage.sh    (symlink to deploy.sh in this repo)
 ```
 
-`public/build/` is gitignored in local development (see `.gitignore`) — for a git-pull-based deployment, either:
-- Build locally and `git add -f public/build` for the deploy commit, or
-- Build on the server as a one-time exception if Node happens to be available there, or
-- Use a CI step that builds and pushes only the `public/build/` artifacts.
+`public/build/` is committed to git because the server has no npm. `public_html/build` on the server is a symlink to the app's `public/build`, so the pulled assets go live immediately. **Always run `npm run build` before committing** any change to Blade views, CSS or JS. Tailwind only includes classes it finds at build time, so a new class in a view needs a new build.
 
-Confirm which approach the actual host supports before relying on it — see `CPANEL_DEPLOYMENT.md`.
+[deploy.sh](deploy.sh) does the server side:
+- stops if tracked files were edited on the server
+- `git pull --ff-only`
+- `composer install` (only when `composer.lock` changed)
+- `config:clear`, then `migrate --force`
+- rebuilds the config, route, view and event caches
+- warns if files copied into `public_html` (`.htaccess`, favicons, `robots.txt`) now differ from `public/`, or if the `build`/`storage` symlinks are missing. It never copies them itself: `public_html/index.php` has edited paths and must not be overwritten.
+
+One-time setup on the server:
+
+```bash
+chmod +x ~/alieimran-landingpage/deploy.sh
+ln -s ~/alieimran-landingpage/deploy.sh ~/deploy-landingpage.sh
+```
+
+The first run moves the old hand-uploaded `public/build` to `~/build-manual-backup-<timestamp>`, because git won't pull over untracked files. Delete that folder once the site looks right.
 
 ## Production `.env`
 
