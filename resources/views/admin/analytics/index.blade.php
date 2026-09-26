@@ -108,7 +108,7 @@
                                 :label="$interaction->label"
                                 :count="$interaction->total"
                                 :max="$topInteractions->max('total') ?: 1"
-                                :badge="$interaction->event_type === 'social_click' ? 'social' : 'link'"
+                                :badge="match ($interaction->event_type) { 'social_click' => 'social', 'share_page_click' => 'page', default => 'link' }"
                             />
                         @endforeach
                     </div>

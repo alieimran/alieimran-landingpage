@@ -6,6 +6,7 @@ use App\Http\Controllers\Admin\DashboardController as AdminDashboardController;
 use App\Http\Controllers\Admin\DigitalCardController as AdminDigitalCardController;
 use App\Http\Controllers\Admin\LinkCategoryController;
 use App\Http\Controllers\Admin\LinkController;
+use App\Http\Controllers\Admin\SharePageController as AdminSharePageController;
 use App\Http\Controllers\Admin\SiteSectionController as AdminSiteSectionController;
 use App\Http\Controllers\Admin\SiteSettingController;
 use App\Http\Controllers\Admin\SocialLinkController;
@@ -15,6 +16,7 @@ use App\Http\Controllers\ContactController;
 use App\Http\Controllers\HomeController;
 use App\Http\Controllers\LinkClickController;
 use App\Http\Controllers\ProfileController;
+use App\Http\Controllers\SharePageController;
 use App\Http\Controllers\SitemapController;
 use Illuminate\Support\Facades\Route;
 
@@ -30,6 +32,7 @@ Route::post('/contact', [ContactController::class, 'store'])
 
 Route::get('/go/link/{link}', [LinkClickController::class, 'link'])->name('go.link');
 Route::get('/go/social/{socialLink}', [LinkClickController::class, 'social'])->name('go.social');
+Route::get('/go/page/{sharePage:slug}', [SharePageController::class, 'go'])->name('go.share-page');
 
 Route::get('/sitemap.xml', SitemapController::class)->name('sitemap');
 
@@ -54,6 +57,7 @@ Route::middleware(['auth', 'verified', 'admin'])->prefix('admin')->name('admin.'
 
     Route::resource('links', LinkController::class)->except(['show']);
     Route::resource('social-links', SocialLinkController::class)->except(['show']);
+    Route::resource('share-pages', AdminSharePageController::class)->except(['show']);
     Route::resource('link-categories', LinkCategoryController::class)->only(['index', 'store', 'update', 'destroy']);
 
     Route::get('site-settings', [SiteSettingController::class, 'edit'])->name('site-settings.edit');
@@ -72,3 +76,11 @@ Route::middleware(['auth', 'verified', 'admin'])->prefix('admin')->name('admin.'
 });
 
 require __DIR__.'/auth.php';
+
+// Admin-created share pages, e.g. /gambartunang. Registered last so it
+// only ever catches paths no other route claimed; SharePageRequest also
+// refuses slugs that collide with existing routes or public folders.
+Route::get('/{sharePage:slug}', [SharePageController::class, 'show'])
+    ->where('sharePage', '[a-z0-9]+(?:-[a-z0-9]+)*')
+    ->middleware('track.visit')
+    ->name('share-page.show');
