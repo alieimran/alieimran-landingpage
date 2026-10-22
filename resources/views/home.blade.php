@@ -77,7 +77,7 @@
                         </div>
 
                         @if ($profile->profile_photo)
-                            <div class="relative mx-auto mt-7 mb-6 w-28 h-28 sm:w-32 sm:h-32">
+                            <button type="button" data-profile-photo-open aria-label="Enlarge profile photo of {{ $profile->display_name }}" aria-haspopup="dialog" aria-controls="profile-photo-dialog" class="relative block mx-auto mt-7 mb-6 w-28 h-28 sm:w-32 sm:h-32 cursor-zoom-in rounded-2xl focus-visible:outline-2 focus-visible:outline-offset-8 focus-visible:outline-emerald-500">
                                 <div class="absolute -inset-2 rounded-2xl border border-emerald-500/20"></div>
                                 <img
                                     src="{{ \Illuminate\Support\Facades\Storage::url($profile->profile_photo) }}"
@@ -86,7 +86,17 @@
                                 >
                                 <span class="absolute -top-1 -left-1 w-3 h-3 border-t-2 border-l-2 border-emerald-500 rounded-tl"></span>
                                 <span class="absolute -bottom-1 -right-1 w-3 h-3 border-b-2 border-r-2 border-emerald-500 rounded-br"></span>
-                            </div>
+                            </button>
+                            <dialog id="profile-photo-dialog" aria-labelledby="profile-photo-name" @if ($profile->job_title) aria-describedby="profile-photo-position" @endif class="m-auto w-[calc(100%-2rem)] max-w-lg max-h-[90dvh] overflow-y-auto rounded-2xl border border-emerald-500/30 bg-white p-6 text-gray-900 shadow-2xl backdrop:bg-black/80 backdrop:backdrop-blur-sm dark:bg-gray-950 dark:text-gray-100">
+                                <form method="dialog" class="mb-4 flex justify-end">
+                                    <button aria-label="Close enlarged profile photo" class="rounded-lg px-3 py-1 text-sm text-gray-600 hover:bg-gray-100 focus-visible:outline-2 focus-visible:outline-emerald-500 dark:text-gray-300 dark:hover:bg-gray-800">Close &times;</button>
+                                </form>
+                                <img src="{{ \Illuminate\Support\Facades\Storage::url($profile->profile_photo) }}" alt="{{ $profile->display_name }}" class="mx-auto max-h-[55dvh] w-full rounded-xl object-contain">
+                                <h2 id="profile-photo-name" class="mt-5 text-2xl font-bold tracking-tight">{{ $profile->display_name }}</h2>
+                                @if ($profile->job_title)
+                                    <p id="profile-photo-position" class="mt-2 font-mono text-sm text-emerald-600 dark:text-emerald-400">{{ $profile->job_title }}</p>
+                                @endif
+                            </dialog>
                         @else
                             <div class="mt-7 mb-6"></div>
                         @endif
@@ -224,9 +234,12 @@
 
             </main>
 
-            <footer class="mt-16 flex items-center gap-2 font-mono text-[11px] text-gray-600 dark:text-gray-400">
-                <span class="inline-flex h-1.5 w-1.5 rounded-full bg-emerald-500"></span>
-                system nominal &middot; &copy; {{ now()->year }} {{ $profile->full_name }}
+            <footer class="mt-16 flex flex-col items-center gap-3 font-mono text-[11px] text-gray-600 dark:text-gray-400">
+                <p class="flex items-center gap-2">
+                    <span class="inline-flex h-1.5 w-1.5 rounded-full bg-emerald-500"></span>
+                    system nominal &middot; &copy; {{ now()->year }} {{ $profile->full_name }}
+                </p>
+                <a href="{{ route('login') }}" class="rounded px-2 py-1 hover:text-emerald-600 dark:hover:text-emerald-400 hover:underline focus-visible:outline-2 focus-visible:outline-emerald-500 transition">Admin login</a>
             </footer>
         </div>
     </body>
