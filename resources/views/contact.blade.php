@@ -94,14 +94,6 @@
                             <x-input-error :messages="$errors->get('message')" class="mt-2" />
                         </div>
 
-                        @if (config('services.turnstile.enabled'))
-                            <div>
-                                <div class="cf-turnstile" data-sitekey="{{ config('services.turnstile.site_key') }}" data-action="contact" data-size="flexible"></div>
-                                <x-input-error :messages="$errors->get('cf-turnstile-response')" class="mt-2" />
-                            </div>
-                            <script src="https://challenges.cloudflare.com/turnstile/v0/api.js" nonce="{{ $cspNonce }}" async defer></script>
-                        @endif
-
                         <button type="submit" class="w-full inline-flex justify-center items-center px-5 py-2.5 rounded-lg bg-emerald-600 text-white text-sm font-semibold hover:bg-emerald-500 hover:shadow-[0_0_20px_rgba(16,185,129,0.35)] transition">
                             Send Message
                         </button>

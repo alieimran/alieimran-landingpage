@@ -119,13 +119,15 @@
             <div class="bg-white dark:bg-gray-800 overflow-hidden shadow-sm rounded-lg">
                 <div class="px-6 py-4 border-b border-gray-200 dark:border-gray-700">
                     <h3 class="font-mono text-xs uppercase tracking-widest text-gray-500 dark:text-gray-400">
-                        <span class="text-emerald-500">#</span> recent visits
+                        <span class="text-emerald-500">#</span> visitor activity &middot; last 30 days
                     </h3>
                 </div>
-                <table class="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
+                <div class="overflow-x-auto"><table class="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
                     <thead class="bg-gray-50 dark:bg-gray-900">
                         <tr>
                             <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">{{ __('Page') }}</th>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">Public IP</th>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">Approximate location</th>
                             <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">{{ __('Device') }}</th>
                             <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">{{ __('Browser') }}</th>
                             <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">{{ __('When') }}</th>
@@ -135,21 +137,24 @@
                         @forelse ($recentViews as $view)
                             <tr>
                                 <td class="px-6 py-3 text-sm text-gray-900 dark:text-gray-100 font-mono">{{ $view->path }}</td>
+                                <td class="px-6 py-3 text-sm text-gray-900 dark:text-gray-100 font-mono">{{ $view->ip_address ?? 'Not recorded' }}</td>
+                                <td class="px-6 py-3 text-sm text-gray-600 dark:text-gray-400">{{ $view->location ?? ($view->ip_address ? ($view->geo_checked_at ? 'Unavailable' : 'Lookup pending') : 'Not recorded') }}</td>
                                 <td class="px-6 py-3 text-sm text-gray-600 dark:text-gray-400">{{ ucfirst($view->device_type ?? '—') }} / {{ $view->os ?? '—' }}</td>
                                 <td class="px-6 py-3 text-sm text-gray-600 dark:text-gray-400">{{ $view->browser ?? '—' }}</td>
-                                <td class="px-6 py-3 text-xs text-gray-500 dark:text-gray-500">{{ $view->created_at->diffForHumans() }}</td>
+                                <td class="px-6 py-3 text-xs text-gray-500 dark:text-gray-500">{{ $view->created_at->timezone('Asia/Kuala_Lumpur')->format('d M Y H:i') }} MYT</td>
                             </tr>
                         @empty
                             <tr>
-                                <td colspan="4" class="px-6 py-8 text-center text-sm text-gray-500 dark:text-gray-400">{{ __('No visits recorded yet.') }}</td>
+                                <td colspan="6" class="px-6 py-8 text-center text-sm text-gray-500 dark:text-gray-400">{{ __('No visits recorded yet.') }}</td>
                             </tr>
                         @endforelse
                     </tbody>
-                </table>
+                </table></div>
+                <div class="p-4">{{ $recentViews->links() }}</div>
             </div>
 
             <p class="font-mono text-[11px] text-gray-400 dark:text-gray-600">
-                Privacy: no IP addresses are stored. Visitor counts use a one-way hash that rotates daily, so no individual can be tracked across days.
+                Public IPs and approximate city/region/country are available to admins for 30 days, then cleared by the daily retention task. Locations are resolved hourly using ipwho.is; VPNs and mobile networks may show a different location. Older records cannot be backfilled because their IPs were not stored. Daily visitor hashes remain in use for summary counts.
                 @if ($retentionNote)
                     Data collected since {{ \Illuminate\Support\Carbon::parse($retentionNote)->format('Y-m-d') }}.
                 @endif

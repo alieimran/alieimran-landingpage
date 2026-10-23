@@ -2,6 +2,7 @@
 
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Support\Facades\Http;
 
 uses(RefreshDatabase::class);
 
@@ -16,6 +17,7 @@ test('non-admin authenticated users are forbidden', function () {
 });
 
 test('admins can access the dashboard', function () {
+    Http::fake(fn () => Http::response([], 503));
     $admin = User::factory()->create();
     $admin->forceFill(['is_admin' => true])->save();
 

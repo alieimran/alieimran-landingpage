@@ -9,6 +9,9 @@ class PageView extends Model
     const UPDATED_AT = null;
 
     protected $fillable = [
+        'ip_address',
+        'location',
+        'geo_checked_at',
         'path',
         'referrer',
         'device_type',

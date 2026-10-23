@@ -6,6 +6,7 @@ use App\Http\Middleware\TrackPageView;
 use Illuminate\Foundation\Application;
 use Illuminate\Foundation\Configuration\Exceptions;
 use Illuminate\Foundation\Configuration\Middleware;
+use Illuminate\Http\Request;
 
 return Application::configure(basePath: dirname(__DIR__))
     ->withRouting(
@@ -19,8 +20,9 @@ return Application::configure(basePath: dirname(__DIR__))
             'track.visit' => TrackPageView::class,
         ]);
 
+        $middleware->trustProxies(headers: Request::HEADER_X_FORWARDED_FOR | Request::HEADER_X_FORWARDED_PROTO);
         $middleware->append(SecureHeaders::class);
     })
     ->withExceptions(function (Exceptions $exceptions): void {
-        //
+        $exceptions->dontFlash(['cf-turnstile-response', 'TURNSTILE_SECRET_KEY', 'turnstile_secret_key']);
     })->create();

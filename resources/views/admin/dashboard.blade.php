@@ -25,6 +25,7 @@
                     <p class="text-3xl font-semibold text-gray-900 dark:text-gray-100">{{ $newInquiryCount }}</p>
                 </a>
             </div>
+            @include('admin.dashboard-status')
         </div>
     </div>
 </x-app-layout>

@@ -27,12 +27,12 @@ test('bot traffic is not recorded', function () {
     expect(PageView::count())->toBe(0);
 });
 
-test('no raw ip address is ever stored', function () {
+test('private ip addresses are not stored', function () {
     $this->withHeaders(['User-Agent' => 'Mozilla/5.0 Chrome/120.0'])->get('/');
 
     $view = PageView::first();
 
-    expect($view->getAttributes())->not->toHaveKey('ip')
+    expect($view->ip_address)->toBeNull()
         ->and($view->visitor_hash)->not->toBe(request()->ip());
 });
 

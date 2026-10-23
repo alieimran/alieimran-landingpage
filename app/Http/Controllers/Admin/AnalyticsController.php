@@ -76,7 +76,7 @@ class AnalyticsController extends Controller
             ->take(8)
             ->get();
 
-        $recentViews = PageView::latest()->take(8)->get();
+        $recentViews = PageView::where('created_at', '>=', now()->subDays(30))->latest('created_at')->orderByDesc('id')->paginate(25)->withQueryString();
 
         return view('admin.analytics.index', [
             'summary' => $summary,

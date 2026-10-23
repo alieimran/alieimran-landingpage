@@ -40,34 +40,65 @@ The first run moves the old hand-uploaded `public/build` to `~/build-manual-back
 
 ## Production `.env`
 
-### Cloudflare Turnstile on login and contact
+### Cloudflare Turnstile on admin login only
 
-Create a Managed Turnstile widget in the Cloudflare dashboard for `alieimran.com`
-(and `www.alieimran.com` if you use that hostname). Turnstile does not require moving
-the domain's DNS to Cloudflare. Store its keys only in the server's `.env`:
+This Laravel app uses the existing session login at /login. Turnstile runs before
+credential checks, preserving CSRF, password authentication and login rate limiting.
+Contact submissions and password reset routes do not use Turnstile.
+
+The deployment APP_URL is https://www.alieimran.com. Verified on 2026-10-24:
+the live www login form posts to https://www.alieimran.com/login. The bare domain
+also serves login without redirecting, so use the www login URL when enabled.
+Siteverify must return the exact hostname www.alieimran.com and action login;
+the widget's broader allowed-hostname setting does not relax server validation.
+
+Use the existing **Managed** widget allowing alieimran.com (including www).
+Do not modify domain-wide Cloudflare settings or the separate portfolio app.
+No DNS move is needed for Turnstile. Defaults in .env.example are:
 
 ```env
-TURNSTILE_ENABLED=true
-TURNSTILE_SITE_KEY=your-widget-site-key
-TURNSTILE_SECRET_KEY=your-widget-secret-key
-TURNSTILE_HOSTNAME=alieimran.com
+TURNSTILE_ENABLED=false
+TURNSTILE_SITE_KEY=
+TURNSTILE_SECRET_KEY=
+TURNSTILE_HOSTNAME=www.alieimran.com
 ```
 
-Set `TURNSTILE_HOSTNAME` to the exact hostname used for login. Edit the secret in
-cPanel File Manager or `nano .env`; never paste it into chat or commit it. Run
-`php artisan config:cache` after editing. Confirm the widget loads and a real
-login succeeds. Verification checks success, hostname and the expected `login` or `contact` action;
-Missing/invalid tokens and verification outages block login and contact submissions while enabled. Contact verification runs before storing inquiries or sending notification email. The contact rate limit and honeypot remain enabled.
-For emergency recovery through cPanel, set `TURNSTILE_ENABLED=false` and run
-`php artisan config:cache`. Existing password checks and rate limiting still apply.
+After the reviewed changes have been committed and pushed, deploy from cPanel Terminal:
 
-Turnstile protects submissions through this website. Direct email to a mailbox bypasses the website and Turnstile; mailbox spam filtering and SPF/DKIM/DMARC must be configured separately with the mail provider. Do not move DMARC to enforcement until all legitimate senders pass aligned SPF or DKIM. Cloudflare DNS/proxy and its email address obfuscation require separate account configuration; adding Turnstile does not enable them.
+```bash
+cd /home2/alieimra/alieimran-landingpage
+bash ./deploy.sh
+nano .env
+```
 
-Before deploying, confirm the production widget keys exist, the allowed widget hostnames include the actual contact/login hostname, and TURNSTILE_HOSTNAME matches that hostname exactly. Smoke-test both forms with a real challenge; missing tokens must never create an inquiry or send email.
+Enter the site key and rotated secret privately in the production .env, then set
+TURNSTILE_ENABLED=true and TURNSTILE_HOSTNAME=www.alieimran.com. Keep APP_DEBUG=false
+and APP_URL=https://www.alieimran.com. Never commit .env or real keys, or paste secrets
+into command-line arguments. Apply the configuration and verify the page:
 
-The feature defaults to disabled until configured. Use a separate widget and
-configuration for the portfolio application; this repository serves the main
-domain's `/login`.
+```bash
+php artisan config:cache
+curl -I https://www.alieimran.com/login
+```
+
+In a browser, confirm the widget loads and a real admin login succeeds at
+https://www.alieimran.com/login. A missing/invalid token, wrong hostname/action,
+missing configuration or Cloudflare connection failure must block login. Inspect
+CSP for challenges.cloudflare.com in frame-src/connect-src; the loader uses the
+existing script nonce. Tokens and passwords are excluded from flashed input, and
+verification does not log tokens or secrets. No application database migration is
+introduced by this feature; deploy.sh retains the normal migration/cache process.
+
+Emergency recovery, in cPanel Terminal:
+
+```bash
+cd /home2/alieimra/alieimran-landingpage
+nano .env
+# Set TURNSTILE_ENABLED=false, save and exit.
+php artisan config:cache
+```
+
+Existing password authentication and rate limiting remain active when disabled.
 
 Differences from local `.env` that **must** be set before going live:
 
@@ -153,3 +184,57 @@ Adapted from SRS §83:
 - [ ] Config/route/view caches built (`config:cache`, `route:cache`, `view:cache`)
 - [ ] Backup taken before deploying (see `BACKUP.md`)
 - [ ] Sibling applications (`/portfolio`, `/tunang`, `/kahwin`) verified unaffected
+
+## Admin dashboard and visitor activity
+
+- `JAKIM_PRAYER_ZONE=WLY01` defaults to Kuala Lumpur/Putrajaya. Set another official
+  JAKIM zone in this application's production `.env`, then `php artisan config:cache`.
+  Prayer data comes directly from JAKIM e-Solat, uses Asia/Kuala_Lumpur dates and is
+  cached for 15 minutes. A provider outage displays unavailable, not invented times.
+- `npm run build` records the asset-build Node/npm/Vite versions in
+  `resources/build-info.json`. Include this file and `public/build` in a future
+  deployment. It does not report Node installed on the cPanel server.
+- The admin dashboard detects web PHP, connected MariaDB/MySQL, Laravel, OpenSSL
+  and server software. Versions not exposed by the host (including Composer CLI)
+  remain unknown. PHP extensions and hosting patches are outside the lifecycle scan.
+- Maintained-branch patch/support checks use endoflife.date, cached six hours.
+  Green means exact latest patch on a maintained branch. It is not a CVE-free claim.
+  Vendor security links cover runtime/database advisories; OSV checks production
+  Composer packages and locked npm build dependencies. Missing/incomplete responses
+  cannot yield an all-clear. Requests send only product/package versions to these
+  providers. This is not a replacement for hosting security monitoring.
+- Logout buttons submit the existing CSRF-protected POST form directly, avoiding
+  inline onclick handlers blocked by CSP. Successful logout redirects home.
+
+### Visitor IP/location rollout
+
+The new migration adds nullable visitor fields; historical IPs cannot be recovered.
+After these changes are reviewed, committed and pushed, deploy normally:
+
+```bash
+cd /home2/alieimra/alieimran-landingpage
+bash ./deploy.sh
+php artisan analytics:locate
+php artisan analytics:prune-visitor-details
+php artisan schedule:list
+```
+
+Ensure the existing cPanel scheduler cron runs every minute (do not duplicate it):
+
+```cron
+* * * * * cd /home2/alieimra/alieimran-landingpage && php artisan schedule:run >> /dev/null 2>&1
+```
+
+`analytics:locate` runs hourly, at most 20 public IPs per run, using HTTPS ipwho.is
+lookups. Failed lookups retry after a day; rate limits stop the batch. Public pages
+never wait for geolocation. Locations are approximate and can represent VPN/mobile
+exit points, not the visitor's exact physical location. The admin table paginates
+25 visits and only shows the last rolling 30 days. IPs/locations older than 30 days
+are cleared daily; existing aggregate analytics keep their normal retention.
+Update any public analytics/privacy disclosure to describe this collection before
+production activation. Backup retention is separate from live-table pruning.
+
+Leave `ANALYTICS_TRUSTED_PROXIES=` empty with direct LiteSpeed hosting. If this app
+is later placed behind a reverse proxy, configure only its confirmed IPs/CIDRs and
+run `php artisan config:cache`. Do not trust arbitrary X-Forwarded-For or
+CF-Connecting-IP values. No domain-wide or sibling-app changes are needed.

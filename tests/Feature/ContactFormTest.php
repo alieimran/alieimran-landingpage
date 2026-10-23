@@ -4,7 +4,6 @@ use App\Mail\NewContactInquiryMail;
 use App\Models\ContactInquiry;
 use App\Models\SiteSetting;
 use Illuminate\Foundation\Testing\RefreshDatabase;
-use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Mail;
 
 uses(RefreshDatabase::class);
@@ -88,23 +87,10 @@ test('the contact form is rate limited', function () {
         ->assertStatus(429);
 });
 
-test('turnstile blocks unverified contact email and accepts only the contact action', function () {
-    config(['services.turnstile' => ['enabled' => true, 'site_key' => 'public-key', 'secret_key' => 'secret', 'hostname' => 'alieimran.com']]);
+test('enabling login turnstile does not protect the contact form', function () {
+    config(['services.turnstile.enabled' => true]);
     Mail::fake();
-    SiteSetting::current()->update(['contact_notification_email' => 'admin@example.com']);
-    $this->get(route('contact.create'))->assertSee('data-action="contact"', false)->assertDontSee('data-sitekey="secret"', false);
-    foreach ([null, 'wrong-host', 'wrong-action', 'outage'] as $case) {
-        Http::swap(new \Illuminate\Http\Client\Factory);
-        Http::fake(['challenges.cloudflare.com/*' => $case === 'outage'
-            ? Http::failedConnection()
-            : Http::response(['success' => true, 'hostname' => $case === 'wrong-host' ? 'attacker.example' : 'alieimran.com', 'action' => $case === 'wrong-action' ? 'login' : 'contact'])]);
-        $this->post(route('contact.store'), validContactPayload(['cf-turnstile-response' => $case]))->assertSessionHasErrors('cf-turnstile-response');
-        expect(ContactInquiry::count())->toBe(0);
-        Mail::assertNothingSent();
-    }
-    Http::swap(new \Illuminate\Http\Client\Factory);
-    Http::fake(['challenges.cloudflare.com/*' => Http::response(['success' => true, 'hostname' => 'alieimran.com', 'action' => 'contact'])]);
-    $this->post(route('contact.store'), validContactPayload(['cf-turnstile-response' => 'verified']))->assertRedirect(route('contact.create'))->assertSessionHasNoErrors();
+    $this->get(route('contact.create'))->assertDontSee('cf-turnstile');
+    $this->post(route('contact.store'), validContactPayload())->assertSessionHasNoErrors();
     expect(ContactInquiry::count())->toBe(1);
-    Mail::assertSent(NewContactInquiryMail::class);
 });

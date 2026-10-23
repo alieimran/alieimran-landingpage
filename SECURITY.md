@@ -60,10 +60,10 @@ If a future pass wants to tighten either of these, that's legitimate follow-up w
 
 ## Privacy-conscious analytics
 
-- No raw IP address is ever stored. `page_views.visitor_hash` is a one-way SHA-256 hash of IP + user-agent + the current date + the app key, which **rotates daily** — the same visitor gets a different hash every day, so no long-term tracking or cross-day profiling is possible from this data even if the database were compromised.
+- Public visitor IPs and approximate city/region/country are stored for the admin-only 30-day activity view. Private/reserved IPs are excluded. The daily `analytics:prune-visitor-details` task clears these fields after 30 days while preserving aggregate records. The daily-rotating visitor hash remains in use for counts. Hourly `analytics:locate` sends recent public IPs to ipwho.is over HTTPS for approximate geolocation; no credentials or page content are sent. Do not expose analytics publicly. Only explicitly configured proxy IPs/CIDRs are trusted; arbitrary forwarded headers are ignored.
 - Bot/crawler traffic is filtered out before being recorded (user-agent pattern match).
 - `analytics:prune` command (default 90-day retention, scheduled monthly) keeps the data window bounded rather than accumulating indefinitely — SRS §38's "retention should be limited where practical."
-- Country-of-visitor detection was deliberately not implemented, after flagging the tradeoff to the project owner: a third-party geolocation API means sending every visitor's IP to an external company, and a self-hosted GeoIP database needs an account and periodic manual updates. Skipped for now as the privacy-first default.
+- Approximate location lookup is now enabled at the owner's request. Public IPs are sent to ipwho.is by the scheduled enrichment command; results are admin-only and expire with the 30-day visitor detail window.
 
 ## Production error handling
 

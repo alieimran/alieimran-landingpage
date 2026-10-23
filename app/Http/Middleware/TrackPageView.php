@@ -22,6 +22,7 @@ class TrackPageView
             && ! UserAgentParser::isBot($userAgent)
         ) {
             PageView::create([
+                'ip_address' => filter_var($request->ip(), FILTER_VALIDATE_IP, FILTER_FLAG_GLOBAL_RANGE) ?: null,
                 'path' => '/'.ltrim($request->path(), '/'),
                 'referrer' => $request->header('referer'),
                 'device_type' => UserAgentParser::deviceType($userAgent),

@@ -12,3 +12,6 @@ Artisan::command('inspire', function () {
 // cron to call `php artisan schedule:run` every minute in production
 // (standard Laravel deployment practice) for this to actually fire.
 Schedule::command('analytics:prune')->monthly();
+
+Schedule::command('analytics:locate')->hourly()->withoutOverlapping();
+Schedule::command('analytics:prune-visitor-details')->daily()->withoutOverlapping();
