@@ -6,7 +6,14 @@ use Illuminate\Database\Eloquent\Model;
 
 class SiteSetting extends Model
 {
+    protected $attributes = ['maintenance_enabled' => false];
+
     protected $fillable = [
+        'maintenance_content',
+        'maintenance_enabled',
+        'maintenance_reason',
+        'maintenance_started_at',
+        'maintenance_until',
         'full_name',
         'display_name',
         'job_title',
@@ -27,6 +34,10 @@ class SiteSetting extends Model
     protected function casts(): array
     {
         return [
+            'maintenance_content' => 'array',
+            'maintenance_enabled' => 'boolean',
+            'maintenance_started_at' => 'datetime',
+            'maintenance_until' => 'datetime',
             'profile_visible' => 'boolean',
         ];
     }

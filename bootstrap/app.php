@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Middleware\CmsMaintenance;
 use App\Http\Middleware\EnsureUserIsAdmin;
 use App\Http\Middleware\SecureHeaders;
 use App\Http\Middleware\TrackPageView;
@@ -22,6 +23,7 @@ return Application::configure(basePath: dirname(__DIR__))
 
         $middleware->trustProxies(headers: Request::HEADER_X_FORWARDED_FOR | Request::HEADER_X_FORWARDED_PROTO);
         $middleware->append(SecureHeaders::class);
+        $middleware->web(append: [CmsMaintenance::class]);
     })
     ->withExceptions(function (Exceptions $exceptions): void {
         $exceptions->dontFlash(['cf-turnstile-response', 'TURNSTILE_SECRET_KEY', 'turnstile_secret_key']);

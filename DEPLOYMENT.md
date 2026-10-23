@@ -238,3 +238,46 @@ Leave `ANALYTICS_TRUSTED_PROXIES=` empty with direct LiteSpeed hosting. If this 
 is later placed behind a reverse proxy, configure only its confirmed IPs/CIDRs and
 run `php artisan config:cache`. Do not trust arbitrary X-Forwarded-For or
 CF-Connecting-IP values. No domain-wide or sibling-app changes are needed.
+
+## CMS maintenance mode
+
+Open **Admin > Manage > Maintenance** (`/admin/maintenance`). Enter the public
+reason and a future expected return time in Malaysia time (UTC+08:00), enable the
+checkbox, and save. Changes take effect immediately; no Artisan down/up command
+is needed. Preview opens the saved public design in a new tab. The page follows
+the site's light/dark theme, accent color, logo, typography and grid background.
+
+Public routes (including contact submissions and redirects) return HTTP 503 with
+Retry-After and no-store headers while enabled. Admins can continue viewing the
+site, editing content and managing maintenance. Login/account recovery stay
+available. The admin layout displays a maintenance banner. The expected return
+time is an estimate and does not automatically disable maintenance; if it passes,
+visitors see an in-progress update instead of a stale promised return time.
+Uncheck the switch and save to reopen the website. Maintenance is off by default.
+
+Deploy through the normal deployment script, which applies the new additive
+`site_settings` migration before clearing/rebuilding application caches. This CMS
+mode relies on Laravel and the database being available; it does not replace the
+host's outage handling or Laravel's CLI maintenance mode for database downtime.
+No sibling application or domain-wide setting is changed.
+
+### Maintenance page editor, suggestions and animation
+
+The Maintenance CMS includes reason suggestions and 15-minute, 30-minute, 1-hour,
+2-hour, 4-hour and 24-hour duration presets. Presets calculate the return time from
+when settings are saved; custom dates use Malaysia time. Editing the date manually
+switches back to a custom estimate. Reason suggestions can be edited before saving.
+
+Admins can customize the status label, heading, reason, button text, footer and
+message shown after an estimate expires. Visibility switches control the logo,
+start time, return time, theme toggle, animated loader and countdown. Text is
+escaped, with no arbitrary HTML/scripts. Countdown is shown only when the return
+time is visible and in the future. It uses the server's timestamp plus elapsed
+browser time to avoid incorrect visitor clocks. Expiry displays the saved delayed
+message and never automatically reopens or reloads the site. The spinner respects
+reduced-motion preferences. Both the public page and editor support phone, tablet
+and desktop layouts; compact admin navigation is used below 1024px.
+
+The additional additive migration stores page customization as JSON. Local
+migrations have been applied. Run the normal deployment script when deploying so
+both maintenance migrations are applied, and ship the rebuilt CSS/JS assets.

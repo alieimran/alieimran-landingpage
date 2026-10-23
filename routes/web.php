@@ -6,6 +6,7 @@ use App\Http\Controllers\Admin\DashboardController as AdminDashboardController;
 use App\Http\Controllers\Admin\DigitalCardController as AdminDigitalCardController;
 use App\Http\Controllers\Admin\LinkCategoryController;
 use App\Http\Controllers\Admin\LinkController;
+use App\Http\Controllers\Admin\MaintenanceController;
 use App\Http\Controllers\Admin\SharePageController as AdminSharePageController;
 use App\Http\Controllers\Admin\SiteSectionController as AdminSiteSectionController;
 use App\Http\Controllers\Admin\SiteSettingController;
@@ -53,6 +54,10 @@ Route::middleware('auth')->group(function () {
 
 Route::middleware(['auth', 'verified', 'admin'])->prefix('admin')->name('admin.')->group(function () {
     Route::get('/', AdminDashboardController::class)->name('dashboard');
+    Route::get('maintenance', [MaintenanceController::class, 'edit'])->name('maintenance.edit');
+    Route::put('maintenance', [MaintenanceController::class, 'update'])->name('maintenance.update');
+    Route::get('maintenance/preview', [MaintenanceController::class, 'preview'])->name('maintenance.preview');
+
     Route::get('analytics', AdminAnalyticsController::class)->name('analytics');
 
     Route::resource('links', LinkController::class)->except(['show']);

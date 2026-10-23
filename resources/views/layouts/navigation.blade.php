@@ -9,7 +9,7 @@
                         <x-site-logo class="block h-8 w-auto" />
                     </a>
                     @if (Auth::user()->is_admin)
-                        <span class="hidden sm:inline-flex items-center gap-1.5 rounded-full border border-emerald-500/30 bg-emerald-500/10 px-2.5 py-0.5 font-mono text-[10px] font-semibold uppercase tracking-widest text-emerald-600 dark:text-emerald-400">
+                        <span class="hidden lg:inline-flex items-center gap-1.5 rounded-full border border-emerald-500/30 bg-emerald-500/10 px-2.5 py-0.5 font-mono text-[10px] font-semibold uppercase tracking-widest text-emerald-600 dark:text-emerald-400">
                             <span class="relative flex h-1.5 w-1.5">
                                 <span class="absolute inline-flex h-full w-full animate-ping rounded-full bg-emerald-400 opacity-75"></span>
                                 <span class="relative inline-flex h-1.5 w-1.5 rounded-full bg-emerald-500"></span>
@@ -20,10 +20,10 @@
                 </div>
 
                 <!-- Navigation Links -->
-                <div class="hidden space-x-8 sm:-my-px sm:ms-10 sm:flex">
+                <div class="hidden space-x-8 lg:-my-px lg:ms-10 lg:flex">
                     @if (Auth::user()->is_admin)
                         @php
-                            $manageRoutes = ['admin.links.*', 'admin.share-pages.*', 'admin.social-links.*', 'admin.link-categories.*', 'admin.site-settings.*', 'admin.digital-card.*', 'admin.sections.*', 'admin.theme.*'];
+                            $manageRoutes = ['admin.links.*', 'admin.share-pages.*', 'admin.social-links.*', 'admin.link-categories.*', 'admin.site-settings.*', 'admin.digital-card.*', 'admin.sections.*', 'admin.theme.*', 'admin.maintenance.*'];
                         @endphp
                         <x-nav-link :href="route('admin.dashboard')" :active="request()->routeIs('admin.dashboard')">
                             {{ __('Admin') }}
@@ -60,6 +60,7 @@
                                     <x-dropdown-link :href="route('admin.site-settings.edit')">{{ __('Site Settings') }}</x-dropdown-link>
                                     <x-dropdown-link :href="route('admin.digital-card.edit')">{{ __('Digital Card') }}</x-dropdown-link>
                                     <x-dropdown-link :href="route('admin.sections.index')">{{ __('Sections') }}</x-dropdown-link>
+                                    <x-dropdown-link :href="route('admin.maintenance.edit')">{{ __('Maintenance') }}</x-dropdown-link>
                                     <x-dropdown-link :href="route('admin.theme.edit')">{{ __('Theme') }}</x-dropdown-link>
                                 </x-slot>
                             </x-dropdown>
@@ -69,7 +70,7 @@
             </div>
 
             <!-- Settings Dropdown -->
-            <div class="hidden sm:flex sm:items-center sm:ms-6 sm:gap-3">
+            <div class="hidden lg:flex lg:items-center lg:ms-6 lg:gap-3">
                 <a
                     href="{{ route('home') }}"
                     target="_blank"
@@ -111,7 +112,7 @@
             </div>
 
             <!-- Hamburger -->
-            <div class="-me-2 flex items-center sm:hidden">
+            <div class="-me-2 flex items-center lg:hidden">
                 <button @click="open = ! open" class="inline-flex items-center justify-center p-2 rounded-md text-gray-400 dark:text-gray-500 hover:text-gray-500 dark:hover:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-900 focus:outline-none focus:bg-gray-100 dark:focus:bg-gray-900 focus:text-gray-500 dark:focus:text-gray-400 transition duration-150 ease-in-out">
                     <svg class="h-6 w-6" stroke="currentColor" fill="none" viewBox="0 0 24 24">
                         <path :class="{'hidden': open, 'inline-flex': ! open }" class="inline-flex" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16" />
@@ -123,7 +124,7 @@
     </div>
 
     <!-- Responsive Navigation Menu -->
-    <div :class="{'block': open, 'hidden': ! open}" class="hidden sm:hidden">
+    <div :class="{'block': open, 'hidden': ! open}" class="hidden lg:hidden">
         <div class="pt-2 pb-3 space-y-1">
             @if (Auth::user()->is_admin)
                 <x-responsive-nav-link :href="route('admin.dashboard')" :active="request()->routeIs('admin.dashboard')">
@@ -153,6 +154,7 @@
                 <x-responsive-nav-link :href="route('admin.sections.index')" :active="request()->routeIs('admin.sections.*')">
                     {{ __('Sections') }}
                 </x-responsive-nav-link>
+                <x-responsive-nav-link :href="route('admin.maintenance.edit')" :active="request()->routeIs('admin.maintenance.*')">{{ __('Maintenance') }}</x-responsive-nav-link>
                 <x-responsive-nav-link :href="route('admin.theme.edit')" :active="request()->routeIs('admin.theme.*')">
                     {{ __('Theme') }}
                 </x-responsive-nav-link>

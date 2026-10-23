@@ -34,6 +34,11 @@
 
             <!-- Page Content -->
             <main>
+                @if (auth()->user()?->is_admin && \App\Models\SiteSetting::current()->maintenance_enabled)
+                    <div class="max-w-7xl mx-auto mt-6 px-4 sm:px-6 lg:px-8">
+                        <div class="rounded-lg border border-amber-300 dark:border-amber-800 bg-amber-50 dark:bg-amber-900 p-4 text-sm text-amber-900 dark:text-amber-100">Maintenance is active. Visitors see the maintenance page. <a class="font-semibold underline" href="{{ route('admin.maintenance.edit') }}">Manage maintenance</a></div>
+                    </div>
+                @endif
                 {{ $slot }}
             </main>
         </div>
