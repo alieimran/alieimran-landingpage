@@ -2,6 +2,7 @@
 
 namespace App\Http\Requests\Auth;
 
+use App\Services\Turnstile;
 use Illuminate\Auth\Events\Lockout;
 use Illuminate\Contracts\Validation\ValidationRule;
 use Illuminate\Foundation\Http\FormRequest;
@@ -42,6 +43,8 @@ class LoginRequest extends FormRequest
     {
         $this->ensureIsNotRateLimited();
 
+        $this->verifyTurnstile();
+
         if (! Auth::attempt($this->only('email', 'password'), $this->boolean('remember'))) {
             RateLimiter::hit($this->throttleKey());
 
@@ -58,6 +61,25 @@ class LoginRequest extends FormRequest
      *
      * @throws ValidationException
      */
+    private function verifyTurnstile(): void
+    {
+        if (! config('services.turnstile.enabled')) {
+            return;
+        }
+
+        $verified = app(Turnstile::class)->verify(
+            $this->input('cf-turnstile-response'), 'login', $this->ip(),
+        );
+
+        if (! $verified) {
+            RateLimiter::hit($this->throttleKey());
+
+            throw ValidationException::withMessages([
+                'cf-turnstile-response' => 'Please complete the security check and try again. If it has expired, refresh this page.',
+            ]);
+        }
+    }
+
     public function ensureIsNotRateLimited(): void
     {
         if (! RateLimiter::tooManyAttempts($this->throttleKey(), 5)) {

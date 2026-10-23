@@ -40,6 +40,35 @@ The first run moves the old hand-uploaded `public/build` to `~/build-manual-back
 
 ## Production `.env`
 
+### Cloudflare Turnstile on login and contact
+
+Create a Managed Turnstile widget in the Cloudflare dashboard for `alieimran.com`
+(and `www.alieimran.com` if you use that hostname). Turnstile does not require moving
+the domain's DNS to Cloudflare. Store its keys only in the server's `.env`:
+
+```env
+TURNSTILE_ENABLED=true
+TURNSTILE_SITE_KEY=your-widget-site-key
+TURNSTILE_SECRET_KEY=your-widget-secret-key
+TURNSTILE_HOSTNAME=alieimran.com
+```
+
+Set `TURNSTILE_HOSTNAME` to the exact hostname used for login. Edit the secret in
+cPanel File Manager or `nano .env`; never paste it into chat or commit it. Run
+`php artisan config:cache` after editing. Confirm the widget loads and a real
+login succeeds. Verification checks success, hostname and the expected `login` or `contact` action;
+Missing/invalid tokens and verification outages block login and contact submissions while enabled. Contact verification runs before storing inquiries or sending notification email. The contact rate limit and honeypot remain enabled.
+For emergency recovery through cPanel, set `TURNSTILE_ENABLED=false` and run
+`php artisan config:cache`. Existing password checks and rate limiting still apply.
+
+Turnstile protects submissions through this website. Direct email to a mailbox bypasses the website and Turnstile; mailbox spam filtering and SPF/DKIM/DMARC must be configured separately with the mail provider. Do not move DMARC to enforcement until all legitimate senders pass aligned SPF or DKIM. Cloudflare DNS/proxy and its email address obfuscation require separate account configuration; adding Turnstile does not enable them.
+
+Before deploying, confirm the production widget keys exist, the allowed widget hostnames include the actual contact/login hostname, and TURNSTILE_HOSTNAME matches that hostname exactly. Smoke-test both forms with a real challenge; missing tokens must never create an inquiry or send email.
+
+The feature defaults to disabled until configured. Use a separate widget and
+configuration for the portfolio application; this repository serves the main
+domain's `/login`.
+
 Differences from local `.env` that **must** be set before going live:
 
 ```env

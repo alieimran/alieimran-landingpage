@@ -2,7 +2,9 @@
 
 namespace App\Http\Requests;
 
+use App\Services\Turnstile;
 use Illuminate\Foundation\Http\FormRequest;
+use Illuminate\Validation\Validator;
 
 class StoreContactInquiryRequest extends FormRequest
 {
@@ -21,6 +23,19 @@ class StoreContactInquiryRequest extends FormRequest
             'message' => ['required', 'string', 'max:5000'],
             'category' => ['required', 'in:general_inquiry,feedback,complaint,collaboration,job_opportunity,project_inquiry,other'],
         ];
+    }
+
+    public function withValidator(Validator $validator): void
+    {
+        $validator->after(function ($validator) {
+            if ($validator->errors()->isNotEmpty() || $this->isHoneypotTriggered() || ! config('services.turnstile.enabled')) {
+                return;
+            }
+
+            if (! app(Turnstile::class)->verify($this->input('cf-turnstile-response'), 'contact', $this->ip())) {
+                $validator->errors()->add('cf-turnstile-response', 'Please complete the security check and try again. If it has expired, refresh this page.');
+            }
+        });
     }
 
     /**
