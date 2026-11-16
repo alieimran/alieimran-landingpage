@@ -2,6 +2,7 @@
 
 namespace App\Services;
 
+use App\Support\PrayerZones;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Http;
 use Throwable;
@@ -10,7 +11,7 @@ class PrayerTimes
 {
     public function today(): array
     {
-        $zone = strtoupper((string) config('dashboard.prayer_zone', 'WLY01'));
+        $zone = PrayerZones::current();
         $date = now('Asia/Kuala_Lumpur')->toDateString();
         if (! preg_match('/^[A-Z]{3}\d{2}$/', $zone)) {
             return ['zone' => $zone, 'date' => $date, 'times' => null];
@@ -33,6 +34,7 @@ class PrayerTimes
                         $times[$label] = substr($row[$key], 0, 5);
                     }
                     $result['times'] = $times;
+                    $result['hijri'] = preg_match('/^\d{4}-\d{2}-\d{2}$/', (string) ($row['hijri'] ?? '')) ? $row['hijri'] : null;
                     $result['checked_at'] = now('Asia/Kuala_Lumpur')->format('d M Y H:i');
                 }
             } catch (Throwable) {

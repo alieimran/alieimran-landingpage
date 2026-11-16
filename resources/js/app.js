@@ -1,11 +1,15 @@
 import Alpine from 'alpinejs';
 import { compressImageInputs } from './compress-images';
+import registerDashboardChart from './dashboard-chart';
+import initChecklists from './checklists';
 
 window.Alpine = Alpine;
+registerDashboardChart(Alpine);
 
 Alpine.start();
 
 compressImageInputs();
+initChecklists();
 
 const profilePhotoDialog = document.getElementById('profile-photo-dialog');
 const profilePhotoButton = document.querySelector('[data-profile-photo-open]');

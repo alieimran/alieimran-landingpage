@@ -1,12 +1,15 @@
 <?php
 
 use App\Http\Controllers\Admin\AnalyticsController as AdminAnalyticsController;
+use App\Http\Controllers\Admin\ChecklistController;
 use App\Http\Controllers\Admin\ContactInquiryController as AdminContactInquiryController;
 use App\Http\Controllers\Admin\DashboardController as AdminDashboardController;
 use App\Http\Controllers\Admin\DigitalCardController as AdminDigitalCardController;
+use App\Http\Controllers\Admin\HolidayStateController;
 use App\Http\Controllers\Admin\LinkCategoryController;
 use App\Http\Controllers\Admin\LinkController;
 use App\Http\Controllers\Admin\MaintenanceController;
+use App\Http\Controllers\Admin\PrayerZoneController;
 use App\Http\Controllers\Admin\SharePageController as AdminSharePageController;
 use App\Http\Controllers\Admin\SiteSectionController as AdminSiteSectionController;
 use App\Http\Controllers\Admin\SiteSettingController;
@@ -17,6 +20,7 @@ use App\Http\Controllers\ContactController;
 use App\Http\Controllers\HomeController;
 use App\Http\Controllers\LinkClickController;
 use App\Http\Controllers\ProfileController;
+use App\Http\Controllers\PublicChecklistController;
 use App\Http\Controllers\SharePageController;
 use App\Http\Controllers\SitemapController;
 use Illuminate\Support\Facades\Route;
@@ -34,6 +38,18 @@ Route::post('/contact', [ContactController::class, 'store'])
 Route::get('/go/link/{link}', [LinkClickController::class, 'link'])->name('go.link');
 Route::get('/go/social/{socialLink}', [LinkClickController::class, 'social'])->name('go.social');
 Route::get('/go/page/{sharePage:slug}', [SharePageController::class, 'go'])->name('go.share-page');
+
+// Read-only public checklist at a personalised link. Private lists return 404 so their existence is not revealed.
+Route::get('/checklist/{slug}', PublicChecklistController::class)
+    ->where('slug', '[a-z0-9]+(?:-[a-z0-9]+)*')
+    ->middleware('throttle:60,1')
+    ->name('checklists.public');
+
+// Visitors with the link can tick items when the owner allows it. Nothing else is writable from the public side.
+Route::patch('/checklist/{slug}/items/{item}/toggle', [PublicChecklistController::class, 'toggle'])
+    ->where('slug', '[a-z0-9]+(?:-[a-z0-9]+)*')->whereNumber('item')
+    ->middleware('throttle:120,1')
+    ->name('checklists.public.toggle');
 
 Route::get('/sitemap.xml', SitemapController::class)->name('sitemap');
 
@@ -59,6 +75,21 @@ Route::middleware(['auth', 'verified', 'admin'])->prefix('admin')->name('admin.'
     Route::get('maintenance/preview', [MaintenanceController::class, 'preview'])->name('maintenance.preview');
 
     Route::get('analytics', AdminAnalyticsController::class)->name('analytics');
+    Route::controller(ChecklistController::class)->group(function () {
+        Route::get('checklists', 'index')->name('checklists.index');
+        Route::post('checklists', 'store')->name('checklists.store');
+        Route::patch('checklists/{checklist}', 'update')->name('checklists.update');
+        Route::patch('checklists/{checklist}/sharing', 'updateSharing')->name('checklists.sharing');
+        Route::delete('checklists/{checklist}', 'destroy')->name('checklists.destroy');
+        Route::post('checklists/{checklist}/reset', 'reset')->name('checklists.reset');
+        Route::post('checklists/{checklist}/items', 'storeItem')->name('checklists.items.store');
+        Route::patch('checklist-items/{item}', 'updateItem')->name('checklist-items.update');
+        Route::patch('checklist-items/{item}/toggle', 'toggleItem')->name('checklist-items.toggle');
+        Route::delete('checklist-items/{item}', 'destroyItem')->name('checklist-items.destroy');
+    });
+
+    Route::patch('dashboard/holiday-state', HolidayStateController::class)->name('holiday-state.update');
+    Route::patch('dashboard/prayer-zone', PrayerZoneController::class)->name('prayer-zone.update');
 
     Route::resource('links', LinkController::class)->except(['show']);
     Route::resource('social-links', SocialLinkController::class)->except(['show']);

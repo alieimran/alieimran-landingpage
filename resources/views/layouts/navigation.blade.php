@@ -23,7 +23,7 @@
                 <div class="hidden space-x-8 lg:-my-px lg:ms-10 lg:flex">
                     @if (Auth::user()->is_admin)
                         @php
-                            $manageRoutes = ['admin.links.*', 'admin.share-pages.*', 'admin.social-links.*', 'admin.link-categories.*', 'admin.site-settings.*', 'admin.digital-card.*', 'admin.sections.*', 'admin.theme.*', 'admin.maintenance.*'];
+                            $manageRoutes = ['admin.links.*', 'admin.share-pages.*', 'admin.social-links.*', 'admin.link-categories.*', 'admin.site-settings.*', 'admin.digital-card.*', 'admin.sections.*', 'admin.theme.*', 'admin.maintenance.*', 'admin.checklists.*'];
                         @endphp
                         <x-nav-link :href="route('admin.dashboard')" :active="request()->routeIs('admin.dashboard')">
                             {{ __('Admin') }}
@@ -55,6 +55,7 @@
                                 <x-slot name="content">
                                     <x-dropdown-link :href="route('admin.links.index')">{{ __('Links') }}</x-dropdown-link>
                                     <x-dropdown-link :href="route('admin.share-pages.index')">{{ __('Share Pages') }}</x-dropdown-link>
+                                    <x-dropdown-link :href="route('admin.checklists.index')">{{ __('Checklists') }}</x-dropdown-link>
                                     <x-dropdown-link :href="route('admin.social-links.index')">{{ __('Social Links') }}</x-dropdown-link>
                                     <x-dropdown-link :href="route('admin.link-categories.index')">{{ __('Categories') }}</x-dropdown-link>
                                     <x-dropdown-link :href="route('admin.site-settings.edit')">{{ __('Site Settings') }}</x-dropdown-link>
@@ -138,6 +139,9 @@
                 </x-responsive-nav-link>
                 <x-responsive-nav-link :href="route('admin.share-pages.index')" :active="request()->routeIs('admin.share-pages.*')">
                     {{ __('Share Pages') }}
+                </x-responsive-nav-link>
+                <x-responsive-nav-link :href="route('admin.checklists.index')" :active="request()->routeIs('admin.checklists.*')">
+                    {{ __('Checklists') }}
                 </x-responsive-nav-link>
                 <x-responsive-nav-link :href="route('admin.social-links.index')" :active="request()->routeIs('admin.social-links.*')">
                     {{ __('Social Links') }}

@@ -14,6 +14,8 @@ class SiteSetting extends Model
         'maintenance_reason',
         'maintenance_started_at',
         'maintenance_until',
+        'prayer_zone',
+        'holiday_extra_state',
         'full_name',
         'display_name',
         'job_title',
